@@ -1,4 +1,4 @@
-package com.tiny.socket.serversocket;
+package com.tiny.socket.websocket;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -13,12 +13,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.tiny.socket.serversocket.connection.ConnectionBase;
-import com.tiny.socket.socketio.buffer.ByteArrayBuffer;
 import com.tiny.socket.socketio.header.HeaderBase;
 import com.tiny.socket.socketio.message.base.MessageBase;
 import com.tiny.socket.socketio.util.DateUtil;
 import com.tiny.socket.socketio.util.ExecutorUtil;
+import com.tiny.socket.websocket.connection.ConnectionBase;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -31,8 +30,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-public abstract class ServerSocket implements Runnable {
-    protected static Logger logger = LoggerFactory.getLogger(ServerSocket.class);
+public abstract class WebSocket implements Runnable {
+    protected static Logger logger = LoggerFactory.getLogger(WebSocket.class);
 
     protected Class<? extends ChannelInitializer<SocketChannel>> initializerClass;
     @SuppressWarnings("rawtypes")
@@ -44,9 +43,9 @@ public abstract class ServerSocket implements Runnable {
     protected boolean running = true;
 
     protected ExecutorService mainThread =
-            Executors.newSingleThreadExecutor(ExecutorUtil.makeName("serversocketmainpool"));
+            Executors.newSingleThreadExecutor(ExecutorUtil.makeName("websocketmainpool"));
     protected ScheduledExecutorService scheduledThread = Executors
-            .newSingleThreadScheduledExecutor(ExecutorUtil.makeName("serversocketschedulepool"));
+            .newSingleThreadScheduledExecutor(ExecutorUtil.makeName("websocketschedulepool"));
 
     @SuppressWarnings("rawtypes")
     protected Queue<MessageBase> messageQueue = new LinkedBlockingQueue<>();
@@ -61,7 +60,7 @@ public abstract class ServerSocket implements Runnable {
     private ServerBootstrap bootStrap;
     private Channel channel;
 
-    protected ServerSocket(int port, int limitConnect,
+    protected WebSocket(int port, int limitConnect,
             Class<? extends ChannelInitializer<SocketChannel>> initializerClass) {
         this.limitConnect = limitConnect;
         this.port = port;
@@ -103,7 +102,7 @@ public abstract class ServerSocket implements Runnable {
         try {
             ChannelInitializer<SocketChannel> handler = null;
             if (initializerClass != null) {
-                Constructor ctor = initializerClass.getDeclaredConstructor(ServerSocket.class);
+                Constructor ctor = initializerClass.getDeclaredConstructor(WebSocket.class);
                 ctor.setAccessible(true);
                 handler = initializerClass.cast(ctor.newInstance(this));
             } else {
@@ -116,7 +115,7 @@ public abstract class ServerSocket implements Runnable {
                     .option(ChannelOption.SO_BACKLOG, 1024)
                     .childOption(ChannelOption.SO_KEEPALIVE, true).childHandler(handler);
 
-            logger.info("server is open");
+            logger.info("web server is open");
 
             ChannelFuture f = bootStrap.bind(port).sync();
             channel = f.channel();
@@ -322,9 +321,9 @@ public abstract class ServerSocket implements Runnable {
         }
     }
 
-    protected abstract void broadcast(byte mainNo, byte subNo, ByteArrayBuffer buffer);
+    protected abstract void broadcast(byte mainNo, byte subNo, String buffer);
 
-    protected abstract void send(long sessionId, byte mainNo, byte subNo, ByteArrayBuffer buffer);
+    protected abstract void send(long sessionId, byte mainNo, byte subNo, String buffer);
 
-    protected abstract void send(Channel channel, byte mainNo, byte subNo, ByteArrayBuffer buffer);
+    protected abstract void send(Channel channel, byte mainNo, byte subNo, String buffer);
 }
