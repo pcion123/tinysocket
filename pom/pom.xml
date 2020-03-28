@@ -21,6 +21,7 @@
     <socketio.version>0.0.1-SNAPSHOT</socketio.version>
     <serversocket.version>0.0.1-SNAPSHOT</serversocket.version>
     <clientsocket.version>0.0.1-SNAPSHOT</clientsocket.version>
+    <websocket.version>0.0.1-SNAPSHOT</websocket.version>
     <webserver.version>0.0.1-SNAPSHOT</webserver.version>
   </properties>
   
@@ -28,6 +29,7 @@
     <module>../socketio</module>
     <module>../serversocket</module>
     <module>../clientsocket</module>
+    <module>../websocket</module>
     <module>../webserver</module>
   </modules>
   
@@ -47,6 +49,11 @@
         <groupId>com.tiny.socket</groupId>
         <artifactId>clientsocket</artifactId>
         <version>${clientsocket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.tiny.socket</groupId>
+        <artifactId>websocket</artifactId>
+        <version>${websocket.version}</version>
       </dependency>
       <dependency>
         <groupId>com.tiny.socket</groupId>
