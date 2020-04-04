@@ -49,12 +49,16 @@ public class ByteArrayBuffer {
         return new ByteArrayBuffer(copyToByteBuf());
     }
 
+    public ByteArrayBuffer retain() {
+        return ReferenceCountUtil.retain(buffer) != null ? this : null;
+    }
+
     public boolean release() {
-        return (buffer != null && buffer.refCnt() > 0) ? ReferenceCountUtil.release(buffer) : false;
+        return (ReferenceCountUtil.refCnt(buffer) > 0) ? ReferenceCountUtil.release(buffer) : false;
     }
 
     public int refCnt() {
-        return buffer != null ? buffer.refCnt() : -1;
+        return ReferenceCountUtil.refCnt(buffer);
     }
 
     public int getCapacity() {

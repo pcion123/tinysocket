@@ -3,12 +3,12 @@ package com.tiny.socket.socketio.message;
 import com.tiny.socket.socketio.header.HeaderBase;
 import com.tiny.socket.socketio.message.base.MessageBase;
 
-public class WebMessage extends MessageBase<String> {
-    public WebMessage() {
+public class JsonMessage extends MessageBase<String> {
+    public JsonMessage() {
         super();
     }
 
-    public WebMessage(HeaderBase header, String buffer) {
+    public JsonMessage(HeaderBase header, String buffer) {
         super(header, buffer);
     }
 
@@ -20,6 +20,6 @@ public class WebMessage extends MessageBase<String> {
     @SuppressWarnings("rawtypes")
     @Override
     public MessageBase clone() {
-        return new WebMessage(header.clone(), buffer);
+        return new JsonMessage(header.clone(), buffer);
     }
 }
