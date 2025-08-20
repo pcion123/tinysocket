@@ -25,13 +25,13 @@
     </properties>
     
     <modules>
-        <module>../socketio</module>
-        <module>../demo</module>
+        <module>../socketio</module>        
         <!-- 以下模組將在創建後啟用 -->
         <!-- <module>../serversocket</module> -->
         <!-- <module>../clientsocket</module> -->
         <!-- <module>../websocket</module> -->
         <!-- <module>../webserver</module> -->
+        <module>../demo</module>
     </modules>
     
     <dependencyManagement>

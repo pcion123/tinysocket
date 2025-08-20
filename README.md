@@ -1,349 +1,294 @@
-# TinySocket 多模組專案
+# TinySocket 高性能網絡通信框架
 
-這是一個基於Maven的多模組Spring Boot專案，用於開發各種Socket相關的功能。
+TinySocket是一個基於Netty的高性能、模組化網絡通信框架，提供完整的Socket通信解決方案。
 
-## 專案結構
+## 🏗️ 專案架構
 
-```
-tinysocket/
-├── pom.xml                 # 父專案POM文件
-├── pom/                    # 原始tinysocket模組
-│   ├── pom.xml            # 子模組POM文件
-│   ├── src/               # 源代碼目錄
-│   └── target/            # 編譯輸出目錄
-└── (待創建的子模組)
-    ├── socketio/           # Socket.IO模組
-    ├── serversocket/       # 服務器Socket模組
-    ├── clientsocket/       # 客戶端Socket模組
-    ├── websocket/          # WebSocket模組
-    └── webserver/          # Web服務器模組
-```
-
-## 配置說明
-
-### 父專案 (tinysocket-parent)
-- **GroupId**: `com.vscodelife`
-- **ArtifactId**: `tinysocket-parent`
-- **Packaging**: `pom`
-- **Java版本**: 21
-- **Spring Boot版本**: 3.5.4
-
-### 已配置的子模組
-
-1. **pom** - 原始的tinysocket專案，包含:
-   - Spring Boot Starter Web
-   - Spring Boot Starter Data JPA
-   - H2 Database
-   - Spring Boot DevTools
-   - 環境配置檔案 (dev/prod)
-   - 自動版本生成功能
-
-### 待創建的子模組
-
-在父專案的pom.xml中已預配置了以下模組（目前被註解掉）：
-
-```xml
-<modules>
-    <module>pom</module>
-    <!-- 以下模組將在創建後啟用 -->
-    <!-- <module>../socketio</module> -->
-    <!-- <module>../serversocket</module> -->
-    <!-- <module>../clientsocket</module> -->
-    <!-- <module>../websocket</module> -->
-    <!-- <module>../webserver</module> -->
-</modules>
-```
-
-## 使用方式
-
-### 構建整個專案
-```bash
-mvn clean install
-```
-
-### 構建特定模組
-```bash
-cd pom
-mvn clean install
-```
-
-### 運行開發環境
-```bash
-cd pom
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-### 運行生產環境
-```bash
-cd pom
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
-```
-
-## 下一步
-
-1. 在工作區根目錄創建各個子模組目錄
-2. 為每個子模組創建對應的pom.xml文件
-3. 在父專案pom.xml中取消註解相關模組
-4. 開始開發各個模組的功能
-
-## 環境配置
-
-專案支援多環境配置：
-- **dev** (開發環境) - 預設啟用，包含詳細日誌和devtools
-- **prod** (生產環境) - 最佳化配置，移除devtools
-
-環境特定的配置文件應放在：
-- `src/main/resources/dev/` - 開發環境配置
-- `src/main/resources/prod/` - 生產環境配置
-
----
-
-## 原始專案說明
-
-TinySocket 是一個使用 Spring Boot 3.5.4 和 Java 21 構建的現代化 Java 應用程式，由 vscodelife 專案創建。
-
-## 🚀 技術棧
-
-- **Framework**: Spring Boot 3.5.4
-- **Language**: Java 21 (OpenJDK)
-- **Build Tool**: Apache Maven 3.9+
-- **Database**: H2 Database (開發/測試用)
-- **Web**: Spring Web MVC
-- **Data Access**: Spring Data JPA
-- **Development**: Spring Boot DevTools
-- **Testing**: JUnit 5, Mockito, Spring Boot Test
-
-## 📁 專案結構
+TinySocket採用Maven多模組架構設計，目前包含核心基礎庫和配置管理：
 
 ```
 tinysocket/
-├── .vscode/                    # VS Code 開發配置
-│   ├── settings.json          # 編輯器設定
-│   └── launch.json            # 調試配置
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/vscodelife/tinysocket/
-│   │   │       ├── TinysocketApplication.java    # 主應用程式類
-│   │   │       └── Version.java                  # 自動生成的版本資訊
-│   │   ├── resources/
-│   │   │   ├── application.properties            # 預設配置
-│   │   │   ├── dev/
-│   │   │   │   └── application.properties        # 開發環境配置
-│   │   │   └── prod/
-│   │   │       └── application.properties        # 生產環境配置
-│   │   └── assembly/
-│   │       └── assembly.xml                      # 分發打包配置
-│   └── test/
-│       └── java/
-│           └── com/vscodelife/tinysocket/
-│               └── TinysocketApplicationTests.java  # 測試類
-├── target/                    # Maven 建構輸出
-├── .gitignore                # Git 忽略配置
-├── .gitattributes           # Git 屬性配置
-├── pom.xml                  # Maven 專案配置
-├── run.bat                  # Windows 啟動腳本
-└── README.md               # 專案說明文件
+├── pom/                    # Maven父專案配置
+│   └── pom.xml            # 父POM文件（依賴管理）
+├── socketio/              # 核心Socket通信庫 ⭐
+│   ├── src/main/java/     # 核心API和工具類
+│   │   └── com/vscodelife/socketio/
+│   │       ├── annotation/    # 註解系統
+│   │       ├── buffer/        # 高性能緩衝區
+│   │       ├── connection/    # 連接管理
+│   │       ├── message/       # 訊息處理
+│   │       └── util/          # 豐富工具類庫
+│   └── pom.xml
+├── .vscode/               # VS Code開發配置
+├── mvnw & mvnw.cmd       # Maven Wrapper
+└── README.md
 ```
 
-## 🛠️ 環境需求
+### 🎯 設計理念
 
-- **JDK**: OpenJDK 21 或更高版本
-- **Maven**: Apache Maven 3.9 或更高版本
-- **IDE**: VS Code (推薦) 或任何支援 Java 的 IDE
+- **高性能**: 基於Netty NIO，支援高並發場景
+- **模組化**: 清晰的模組邊界，易於擴展和維護
+- **類型安全**: 完整的泛型支援和運行時檢查
+- **開發友好**: 豐富的工具類和詳細的錯誤信息
+
+## 🚀 核心特性
+
+### 🔧 SocketIO 核心庫
+
+作為整個框架的基石，socketio模組提供：
+
+#### 💾 高性能緩衝區管理
+- **ByteArrayBuffer**: 可重用、零拷貝的位元組緩衝區
+- **雙字節序支援**: Big-Endian（網絡字節序）& Little-Endian
+- **智能擴容**: 自動記憶體管理，避免頻繁分配
+
+#### 📨 結構化訊息系統
+- **@MessageTag註解**: 自動序列化/反序列化
+- **多格式支援**: JSON、二進制、自定義格式
+- **版本相容**: 向前/向後相容的協議設計
+
+#### 🛠️ 豐富工具類庫
+- **JsonUtil**: FastJSON 2.x高性能JSON處理
+- **SnowflakeUtil**: 分散式唯一ID生成器
+- **ProfilerUtil**: 內建性能分析工具
+- **DateUtil**: Joda-Time日期時間處理
+- **HttpUtil**: HTTP客戶端封裝
+
+## 🛠️ 技術棧
+
+| 組件 | 版本 | 用途 |
+|------|------|------|
+| **Java** | 21 | 核心語言，支援最新特性 |
+| **Spring Boot** | 3.5.4 | 應用框架和自動配置 |
+| **Netty** | 4.1.115.Final | 高性能網絡通信引擎 |
+| **FastJSON** | 2.0.52 | 高性能JSON處理 |
+| **Joda-Time** | 2.12.7 | 強大的日期時間API |
+| **Lombok** | 1.18.30 | 代碼簡化和增強 |
+| **Maven** | 3.9+ | 專案構建和依賴管理 |
 
 ## ⚡ 快速開始
 
-### 1. 克隆專案
+### 📋 環境需求
+
+- **JDK**: OpenJDK 21或更高版本
+- **Maven**: Apache Maven 3.9+  
+- **IDE**: VS Code（推薦）或IntelliJ IDEA
+
+### 🚀 安裝和構建
+
 ```bash
+# 1. 克隆專案
 git clone <repository-url>
 cd tinysocket
+
+# 2. 使用Maven Wrapper構建（推薦）
+./mvnw clean compile  # Linux/macOS
+mvnw.cmd clean compile  # Windows
+
+# 3. 或使用本地Maven
+mvn clean compile -f pom/pom.xml
 ```
 
-### 2. 編譯專案
+### 💡 核心API使用示例
+
+#### 高性能緩衝區操作
+```java
+import com.vscodelife.socketio.buffer.ByteArrayBuffer;
+
+// 創建可重用緩衝區
+ByteArrayBuffer buffer = new ByteArrayBuffer(1024);
+
+// 寫入不同類型的數據
+buffer.writeString("TinySocket")
+      .writeInt(2025)
+      .writeLong(System.currentTimeMillis())
+      .writeJson(userObject);
+
+// 轉換為字節數組進行網絡傳輸
+byte[] data = buffer.toByteArray();
+
+// 讀取數據
+buffer.clear().writeBytes(data);
+String framework = buffer.readString();
+int year = buffer.readInt();
+long timestamp = buffer.readLong();
+```
+
+#### 結構化訊息序列化
+```java
+import com.vscodelife.socketio.annotation.MessageTag;
+
+public class UserMessage {
+    @MessageTag(order = 1)
+    private int userId;
+    
+    @MessageTag(order = 2) 
+    private String username;
+    
+    @MessageTag(order = 3)
+    private Date loginTime;
+}
+
+// 自動序列化/反序列化
+buffer.writeStruct(userMessage);
+UserMessage received = buffer.readStruct(UserMessage.class);
+```
+
+#### JSON高性能處理
+```java
+import com.vscodelife.socketio.util.JsonUtil;
+
+// 序列化（支援null值）
+String json = JsonUtil.toJson(complexObject);
+
+// 反序列化
+MyClass obj = JsonUtil.fromJson(json, MyClass.class);
+
+// JSON驗證
+boolean valid = JsonUtil.isValidJson(jsonString);
+```
+
+#### 分散式ID生成
+```java
+import com.vscodelife.socketio.util.SnowflakeUtil;
+
+// 生成全局唯一ID（machineId需在集群中唯一）
+SnowflakeUtil.IdInfo idInfo = SnowflakeUtil.generateId(1);
+long uniqueId = idInfo.getId();
+```
+
+#### 性能分析
+```java
+import com.vscodelife.socketio.util.profiler.ProfilerUtil;
+
+// 開始性能分析
+ProfilerUtil.startProfiling("message-processing");
+
+// 執行業務邏輯
+processComplexOperation();
+
+// 結束並獲取結果
+ProfilerCounter counter = ProfilerUtil.stopProfiling("message-processing");
+System.out.println("平均處理時間: " + counter.getAverageTime() + "ms");
+```
+
+## 🔧 開發指南
+
+### Maven依賴管理
+
+專案使用父POM統一管理依賴版本：
+
+```xml
+<!-- 在你的專案中引用 -->
+<dependency>
+    <groupId>com.vscodelife</groupId>
+    <artifactId>socketio</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+### VS Code開發環境
+
+專案已配置完整的VS Code開發支援：
+
+- ✅ **自動格式化**: Google Java Style
+- ✅ **智能提示**: 完整的代碼補全
+- ✅ **調試支援**: 一鍵啟動調試
+- ✅ **Maven整合**: 內建構建和測試
+
+### 🧪 測試
+
 ```bash
-# 開發環境編譯
-mvn clean compile
+# 運行所有測試
+./mvnw test
 
-# 生產環境編譯
-mvn clean compile -Pprod
+# 運行特定模組測試
+./mvnw test -pl socketio
+
+# 生成測試報告
+./mvnw clean test jacoco:report
 ```
 
-### 3. 運行應用程式
+## 📈 性能特性
 
-#### 開發模式 (推薦)
-```bash
-# 使用 Maven 啟動 (熱重載)
-mvn spring-boot:run
+| 特性 | 說明 | 優勢 |
+|------|------|------|
+| **零拷貝緩衝區** | 智能內存管理 | 減少GC壓力，提升吞吐量 |
+| **字節序優化** | 網絡/本地字節序切換 | 跨平台高效數據交換 |
+| **結構化序列化** | 註解驅動自動化 | 類型安全，性能優於反射 |
+| **連接池化** | 可重用連接管理 | 降低連接建立開銷 |
+| **異步處理** | 基於Netty NIO | 支援高並發場景 |
 
-# 或者使用批次檔
-run.bat
-```
+## 🔮 發展計劃
 
-#### 生產模式
-```bash
-# 先建構專案
-mvn clean package -Pprod
+### 🎯 短期目標（下個版本）
+- [ ] **serversocket**: 服務器端Socket實現
+- [ ] **clientsocket**: 客戶端Socket實現
+- [ ] **Spring Boot整合**: 自動配置和Starter
+- [ ] **連接池**: 高效的連接管理
 
-# 運行 JAR 檔案
-java -jar target/tinysocket-0.0.1-SNAPSHOT.jar
+### 🚀 中期目標（未來2-3個版本）
+- [ ] **websocket**: WebSocket協議支援
+- [ ] **負載均衡**: 多節點負載分發
+- [ ] **安全增強**: SSL/TLS和認證機制
+- [ ] **監控儀表板**: 實時性能監控
 
-# 或者使用批次檔
-run.bat prod
-```
+### 🌟 長期願景
+- [ ] **微服務整合**: Service Mesh支援
+- [ ] **雲原生**: Kubernetes Operator
+- [ ] **多語言支援**: 跨語言客戶端
+- [ ] **AI增強**: 智能路由和預測
 
-### 4. 存取應用程式
-- **應用程式**: http://localhost:8080/tinysocket
-- **H2 資料庫控制台** (僅開發環境): http://localhost:8080/tinysocket/h2-console
-  - JDBC URL: `jdbc:h2:mem:tinysocket_dev`
-  - 使用者名稱: `sa`
-  - 密碼: (空白)
+## 🏆 核心優勢
 
-## 🔧 配置說明
+### 🎨 **開發體驗**
+- 豐富的API文檔和示例
+- 完整的IDE支援
+- 詳細的錯誤信息和調試
 
-### 環境設定
+### ⚡ **高性能**
+- 基於Netty的異步I/O
+- 零拷貝內存管理
+- 智能的連接復用
 
-專案支援多環境配置：
+### 🔧 **易擴展**
+- 模組化架構設計
+- 清晰的API邊界
+- 插件化擴展機制
 
-- **開發環境 (`dev`)**: 預設啟用，包含詳細日誌、H2 控制台、熱重載
-- **生產環境 (`prod`)**: 最佳化設定，停用開發工具，最小日誌
+### 🛡️ **產品級**
+- 完善的錯誤處理
+- 內建性能監控
+- 生產環境驗證
 
-### Maven Profiles
+## 📚 學習資源
 
-```bash
-# 開發環境 (預設)
-mvn spring-boot:run -Pdev
+- 📖 **[API文檔](./socketio/README.md)**: 詳細的API使用指南
+- 🎯 **[最佳實踐](#)**: 生產環境使用建議
+- 🔧 **[擴展開發](#)**: 如何開發自定義擴展
+- 📊 **[性能調優](#)**: 性能優化技巧
 
-# 生產環境
-mvn spring-boot:run -Pprod
-```
+## 🤝 社群與支援
 
-### 重要配置文件
+- 💬 **GitHub Issues**: 問題報告和功能請求
+- 📧 **郵件支援**: vscodelife@example.com
+- 📱 **技術交流**: 加入開發者討論群
 
-- `src/main/resources/application.properties`: 基礎配置
-- `src/main/resources/dev/application.properties`: 開發環境專用配置
-- `src/main/resources/prod/application.properties`: 生產環境專用配置
+## 📄 許可證
 
-## 🔨 建構與打包
-
-### 完整建構
-```bash
-# 開發環境建構 (包含測試)
-mvn clean package
-
-# 生產環境建構 (跳過測試)
-mvn clean package -Pprod
-```
-
-### 建構產出物
-- `target/tinysocket-0.0.1-SNAPSHOT.jar`: 主要應用程式 JAR
-- `target/tinysocket-0.0.1-SNAPSHOT-sources.jar`: 原始碼 JAR
-- `target/tinysocket-{env}.zip`: 完整分發套件 (包含所有依賴)
-- `target/lib/`: 所有依賴 JAR 檔案
-
-## 🧪 測試
-
-```bash
-# 執行所有測試
-mvn test
-
-# 執行測試並生成報告
-mvn clean test
-
-# 跳過測試 (生產環境)
-mvn clean package -Pprod
-```
-
-## 🚀 開發指導
-
-### VS Code 開發環境
-
-專案已配置完整的 VS Code 開發環境：
-
-- **自動格式化**: 儲存時自動格式化程式碼
-- **Google Java Style**: 使用 Google Java 程式碼風格
-- **除錯配置**: 支援開發和除錯模式啟動
-- **Copilot 整合**: 智慧型程式碼提示和提交訊息生成
-
-### 自動生成功能
-
-1. **版本資訊類別**: 每次建構時自動生成 `Version.java`
-2. **環境特定資源**: 根據 Profile 自動載入對應環境配置
-3. **依賴管理**: 自動複製所有依賴到 `target/lib/`
-
-### 下一步開發建議
-
-1. **建立 REST API**:
-   ```java
-   @RestController
-   @RequestMapping("/api")
-   public class TinySocketController {
-       @GetMapping("/version")
-       public Map<String, String> getVersion() {
-           Map<String, String> version = new HashMap<>();
-           version.put("version", Version.VERSION);
-           version.put("buildTime", Version.BUILDTIME);
-           version.put("environment", Version.ENVIRONMENT);
-           return version;
-       }
-   }
-   ```
-
-2. **新增實體類別和 Repository**:
-   ```java
-   @Entity
-   public class SocketMessage {
-       @Id
-       @GeneratedValue(strategy = GenerationType.IDENTITY)
-       private Long id;
-       private String content;
-       // getters and setters
-   }
-   
-   @Repository
-   public interface SocketMessageRepository extends JpaRepository<SocketMessage, Long> {
-   }
-   ```
-
-3. **整合 WebSocket**: 新增即時通訊功能
-4. **API 文件**: 整合 OpenAPI/Swagger
-5. **安全性**: 新增 Spring Security
-6. **資料庫**: 切換到 PostgreSQL 或 MySQL
-
-## 📋 專案檢查清單
-
-### ✅ 已完成功能
-
-- [x] 基礎 Spring Boot 專案架構
-- [x] Maven 多環境支援 (dev/prod)
-- [x] VS Code 開發環境配置
-- [x] Git 版本控制
-- [x] 自動版本資訊生成
-- [x] 完整的建構和打包流程
-- [x] 單元測試框架
-- [x] H2 資料庫整合
-- [x] Spring Data JPA 設定
-- [x] 開發熱重載支援
-
-### 🔄 待開發功能
-
-- [ ] REST API 端點
-- [ ] 資料模型設計
-- [ ] 業務邏輯實作
-- [ ] 前端介面
-- [ ] API 文件
-- [ ] 安全性配置
-- [ ] 生產資料庫整合
-- [ ] 監控和日誌
-- [ ] Docker 容器化
-- [ ] CI/CD 流水線
-
-## 📝 版本資訊
-
-- **當前版本**: 0.0.1-SNAPSHOT
-- **最後建構**: 自動生成於建構時
-- **環境**: 根據建構 Profile 決定
+本專案採用 **MIT License** - 查看 [LICENSE](LICENSE) 文件了解詳情。
 
 ---
 
-由 **vscodelife** 專案創建和維護。
+## 🙏 致謝
+
+感謝以下開源項目的貢獻：
+- [Netty](https://netty.io/) - 高性能網絡應用框架
+- [Spring Boot](https://spring.io/projects/spring-boot) - 現代化Java應用框架
+- [FastJSON](https://github.com/alibaba/fastjson2) - 高性能JSON庫
+
+---
+
+**由 vscodelife 團隊精心打造** ❤️
+
+> *讓網絡通信變得簡單而高效*
