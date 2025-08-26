@@ -1,5 +1,8 @@
 package com.vscodelife.socketio.buffer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -7,6 +10,8 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.vscodelife.socketio.annotation.MessageTag;
 import com.vscodelife.socketio.util.JsonUtil;
@@ -70,6 +75,21 @@ public class ByteArrayBuffer implements Cloneable {
         this.capacity = Math.max(initialCapacity, DEFAULT_CAPACITY);
         this.buffer = new byte[this.capacity];
         this.writeIndex = 0;
+        this.readIndex = 0;
+        this.byteOrder = byteOrder != null ? byteOrder : ByteOrder.BIG_ENDIAN;
+    }
+
+    public ByteArrayBuffer(byte[] bytes) {
+        this(bytes, ByteOrder.BIG_ENDIAN);
+    }
+
+    public ByteArrayBuffer(byte[] bytes, ByteOrder byteOrder) {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("無效的字節數組");
+        }
+        this.capacity = bytes.length;
+        this.buffer = Arrays.copyOf(bytes, bytes.length);
+        this.writeIndex = bytes.length;
         this.readIndex = 0;
         this.byteOrder = byteOrder != null ? byteOrder : ByteOrder.BIG_ENDIAN;
     }
@@ -666,7 +686,7 @@ public class ByteArrayBuffer implements Cloneable {
     /**
      * 轉換為位元組陣列（僅包含有效資料）
      */
-    public byte[] toByteArray() {
+    public byte[] toBytes() {
         return Arrays.copyOfRange(buffer, 0, writeIndex);
     }
 
@@ -907,6 +927,165 @@ public class ByteArrayBuffer implements Cloneable {
 
         // 結構物件處理（遞迴反序列化）
         return readStruct(clazz);
+    }
+
+    // ==================== 壓縮/解壓縮方法 ====================
+
+    /**
+     * 壓縮位元組陣列（使用 GZIP）
+     * 
+     * @param bytes 要壓縮的位元組陣列
+     * @return 壓縮後的位元組陣列
+     * @throws RuntimeException 如果壓縮過程中發生錯誤
+     */
+    private byte[] compress(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return bytes;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                GZIPOutputStream gzipOut = new GZIPOutputStream(baos)) {
+
+            gzipOut.write(bytes);
+            gzipOut.finish();
+            return baos.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException("壓縮數據時發生錯誤: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 解壓縮位元組陣列（使用 GZIP）
+     * 
+     * @param compressedBytes 壓縮的位元組陣列
+     * @return 解壓縮後的位元組陣列
+     * @throws RuntimeException 如果解壓縮過程中發生錯誤
+     */
+    private byte[] decompress(byte[] compressedBytes) {
+        if (compressedBytes == null || compressedBytes.length == 0) {
+            return compressedBytes;
+        }
+
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(compressedBytes);
+                GZIPInputStream gzipIn = new GZIPInputStream(bais);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gzipIn.read(buffer)) != -1) {
+                baos.write(buffer, 0, len);
+            }
+            return baos.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException("解壓縮數據時發生錯誤: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 壓縮緩衝區的內容
+     * 將目前緩衝區中的有效數據進行壓縮，並替換原始數據
+     * 
+     * @return 當前緩衝區實例（支援鏈式調用）
+     * @throws RuntimeException 如果壓縮過程中發生錯誤
+     */
+    public ByteArrayBuffer compress() {
+        if (writeIndex == 0) {
+            return this; // 沒有數據需要壓縮
+        }
+
+        try {
+            // 獲取有效數據
+            byte[] originalData = Arrays.copyOfRange(buffer, 0, writeIndex);
+
+            // 壓縮數據
+            byte[] compressedData = compress(originalData);
+
+            // 檢查壓縮效果
+            if (compressedData.length >= originalData.length) {
+                // 如果壓縮後反而更大，就不使用壓縮
+                return this;
+            }
+
+            // 重置緩衝區並寫入壓縮數據
+            clear();
+            writeBytes(compressedData);
+
+            return this;
+
+        } catch (Exception e) {
+            throw new RuntimeException("壓縮緩衝區時發生錯誤: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 解壓縮緩衝區的內容
+     * 將目前緩衝區中的壓縮數據進行解壓縮，並替換原始數據
+     * 
+     * @return 當前緩衝區實例（支援鏈式調用）
+     * @throws RuntimeException 如果解壓縮過程中發生錯誤
+     */
+    public ByteArrayBuffer decompress() {
+        if (writeIndex == 0) {
+            return this; // 沒有數據需要解壓縮
+        }
+
+        try {
+            // 獲取壓縮數據
+            byte[] compressedData = Arrays.copyOfRange(buffer, 0, writeIndex);
+
+            // 解壓縮數據
+            byte[] decompressedData = decompress(compressedData);
+
+            // 確保有足夠的容量存放解壓縮後的數據
+            if (decompressedData.length > capacity) {
+                // 擴展容量
+                capacity = Math.max(decompressedData.length, capacity * 2);
+                buffer = new byte[capacity];
+            }
+
+            // 重置緩衝區並寫入解壓縮數據
+            clear();
+            writeBytes(decompressedData);
+
+            return this;
+
+        } catch (Exception e) {
+            throw new RuntimeException("解壓縮緩衝區時發生錯誤: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 獲取壓縮比率
+     * 
+     * @return 壓縮後大小與原始大小的比率（0.0 到 1.0）
+     */
+    public double getCompressionRatio() {
+        if (writeIndex == 0) {
+            return 0.0;
+        }
+
+        try {
+            byte[] originalData = Arrays.copyOfRange(buffer, 0, writeIndex);
+            byte[] compressedData = compress(originalData);
+            return (double) compressedData.length / originalData.length;
+        } catch (Exception e) {
+            return 1.0; // 如果壓縮失敗，返回 1.0 表示沒有壓縮效果
+        }
+    }
+
+    /**
+     * 檢查數據是否值得壓縮
+     * 
+     * @param threshold 壓縮閾值（0.0 到 1.0），低於此值才認為值得壓縮
+     * @return 如果壓縮後能達到預期效果則返回 true
+     */
+    public boolean isCompressionWorthwhile(double threshold) {
+        if (threshold <= 0.0 || threshold >= 1.0) {
+            throw new IllegalArgumentException("壓縮閾值必須在 0.0 到 1.0 之間");
+        }
+        return getCompressionRatio() < threshold;
     }
 
     @Override

@@ -634,11 +634,12 @@ public final class ProfilerUtil {
      * @param profilerName 監測物件名稱，必須與 executeStart 中使用的名稱一致
      * @param executeName  執行監測名稱，由 executeStart 方法返回
      * @param counted      是否將此次執行統計到計數器中（true=統計，false=僅檢查超時）
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      * @see #executeStart(String) 開始監測
      * @see ProfilerConfig#getDefaultTimeoutMs() 預設超時時間
      */
-    public static void executeEnd(String profilerName, String executeName, boolean counted) {
-        executeEnd(profilerName, executeName, null, null, currentConfig.getDefaultTimeoutMs(), counted);
+    public static boolean executeEnd(String profilerName, String executeName, boolean counted) {
+        return executeEnd(profilerName, executeName, null, null, currentConfig.getDefaultTimeoutMs(), counted);
     }
 
     /**
@@ -648,10 +649,11 @@ public final class ProfilerUtil {
      * @param executeName  執行監測名稱
      * @param timeout      逾時時間
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, long timeout,
+    public static boolean executeEnd(String profilerName, String executeName, long timeout,
             boolean counted) {
-        executeEnd(profilerName, executeName, null, null, timeout, counted);
+        return executeEnd(profilerName, executeName, null, null, timeout, counted);
     }
 
     /**
@@ -661,10 +663,11 @@ public final class ProfilerUtil {
      * @param executeName  執行監測名稱
      * @param logFunc      log事件
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
+    public static boolean executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
             boolean counted) {
-        executeEnd(profilerName, executeName, logFunc, null, 0, counted);
+        return executeEnd(profilerName, executeName, logFunc, null, 0, counted);
     }
 
     /**
@@ -674,10 +677,11 @@ public final class ProfilerUtil {
      * @param executeName  執行監測名稱
      * @param exeFunc      執行完畢事件
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, Consumer<String> exeFunc,
+    public static boolean executeEnd(String profilerName, String executeName, Consumer<String> exeFunc,
             boolean counted) {
-        executeEnd(profilerName, executeName, null, exeFunc, 0, counted);
+        return executeEnd(profilerName, executeName, null, exeFunc, 0, counted);
     }
 
     /**
@@ -688,10 +692,11 @@ public final class ProfilerUtil {
      * @param logFunc      執行完畢事件
      * @param timeout      逾時時間
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
+    public static boolean executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
             long timeout, boolean counted) {
-        executeEnd(profilerName, executeName, logFunc, null, timeout, counted);
+        return executeEnd(profilerName, executeName, logFunc, null, timeout, counted);
     }
 
     /**
@@ -702,10 +707,11 @@ public final class ProfilerUtil {
      * @param exeFunc      執行完畢事件
      * @param timeout      逾時時間
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, Consumer<String> exeFunc,
+    public static boolean executeEnd(String profilerName, String executeName, Consumer<String> exeFunc,
             long timeout, boolean counted) {
-        executeEnd(profilerName, executeName, null, exeFunc, timeout, counted);
+        return executeEnd(profilerName, executeName, null, exeFunc, timeout, counted);
     }
 
     /**
@@ -717,9 +723,12 @@ public final class ProfilerUtil {
      * @param exeFunc      執行完畢事件
      * @param timeout      逾時時間
      * @param counted      統計標記
+     * @return true 如果觸發了超時機制，false 如果沒有超時
      */
-    public static void executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
+    public static boolean executeEnd(String profilerName, String executeName, Supplier<String> logFunc,
             Consumer<String> exeFunc, long timeout, boolean counted) {
+        boolean timeoutTriggered = false;
+        
         if (counted) {
             // 檢查是否有統計物件，如果沒有則創建
             ProfilerCounter counter = profilerManager.getOrCreateCounter(profilerName);
@@ -733,6 +742,7 @@ public final class ProfilerUtil {
                 counter.execute(executeTime, executeTime >= timeout && timeout > 0);
                 // 檢查時間
                 if (executeTime >= timeout && timeout > 0) {
+                    timeoutTriggered = true;
                     log(executeName, executeTime, logFunc, exeFunc);
                 }
                 // 移除暫存
@@ -746,12 +756,15 @@ public final class ProfilerUtil {
                 long executeTime = timestamp2 - timestamp1;
                 // 檢查時間
                 if (executeTime >= timeout && timeout > 0) {
+                    timeoutTriggered = true;
                     log(executeName, executeTime, logFunc, exeFunc);
                 }
                 // 移除暫存
                 profilerCache.remove(executeName);
             }
         }
+        
+        return timeoutTriggered;
     }
 
     /**

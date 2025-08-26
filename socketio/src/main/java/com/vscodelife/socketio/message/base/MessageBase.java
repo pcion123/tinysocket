@@ -1,14 +1,14 @@
 package com.vscodelife.socketio.message.base;
 
-public abstract class MessageBase<T> {
-    protected HeaderBase header;
-    protected T buffer;
+public abstract class MessageBase<H extends HeaderBase, B> {
+    protected H header;
+    protected B buffer;
 
     protected MessageBase() {
 
     }
 
-    protected MessageBase(HeaderBase header, T buffer) {
+    protected MessageBase(H header, B buffer) {
         this.header = header;
         this.buffer = buffer;
     }
@@ -18,32 +18,41 @@ public abstract class MessageBase<T> {
         return header.toString();
     }
 
-    @SuppressWarnings("rawtypes")
-    public abstract MessageBase clone();
+    public abstract MessageBase<H, B> clone();
 
-    @SuppressWarnings({ "rawtypes", "hiding" })
-    public <T extends MessageBase> T clone(Class<T> clazz) {
-        return clazz.cast(clone());
-    }
-
-    @SuppressWarnings("hiding")
-    public <T extends HeaderBase> T getHeader(Class<T> clazz) {
-        return clazz.cast(header);
-    }
-
-    public HeaderBase getHeader() {
+    public H getHeader() {
         return header;
     }
 
-    public void setHeader(HeaderBase header) {
+    public void setHeader(H header) {
         this.header = header;
     }
 
-    public T getBuffer() {
+    public String getVersion() {
+        return header == null ? null : header.getVersion();
+    }
+
+    public ProtocolKey getProtocolKey() {
+        return header == null ? null : header.getProtocolKey();
+    }
+
+    public boolean isCompress() {
+        return header != null && header.isCompress();
+    }
+
+    public long getSessionId() {
+        return header == null ? 0L : header.getSessionId();
+    }
+
+    public long getRequestId() {
+        return header == null ? 0L : header.getRequestId();
+    }
+
+    public B getBuffer() {
         return buffer;
     }
 
-    public void setBuffer(T buffer) {
+    public void setBuffer(B buffer) {
         this.buffer = buffer;
     }
 

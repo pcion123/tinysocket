@@ -16,18 +16,21 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <spring.boot.version>3.5.4</spring.boot.version>
+        <vscodelife.socketio.version>0.0.1-SNAPSHOT</vscodelife.socketio.version>
+        <vscodelife.serversocket.version>0.0.1-SNAPSHOT</vscodelife.serversocket.version>
         <fastjson.version>2.0.52</fastjson.version>
         <joda.time.version>2.12.7</joda.time.version>
         <lombok.version>1.18.30</lombok.version>
         <netty.version>4.1.115.Final</netty.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     
     <modules>
-        <module>../socketio</module>        
+        <module>../socketio</module>
+        <module>../serversocket</module>
         <!-- 以下模組將在創建後啟用 -->
-        <!-- <module>../serversocket</module> -->
         <!-- <module>../clientsocket</module> -->
         <!-- <module>../websocket</module> -->
         <!-- <module>../webserver</module> -->
@@ -36,6 +39,17 @@
     
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>socketio</artifactId>
+                <version>${vscodelife.socketio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>serversocket</artifactId>
+                <version>${vscodelife.serversocket.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -63,6 +77,23 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
