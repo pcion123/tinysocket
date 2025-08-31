@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -18,11 +19,27 @@ public abstract class CacheBase<M extends MessageBase<? extends HeaderBase, B>, 
 
     protected final Logger logger;
 
+    private final Set<ProtocolKey> includedKeys = ConcurrentHashMap.newKeySet();
     private final Map<String, Cache> cacheMap = new ConcurrentHashMap<>();
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
 
     protected CacheBase(Logger logger, String clazzName) {
+        this(logger, clazzName, true);
+    }
+
+    protected CacheBase(Logger logger, String clazzName, boolean enabled) {
         this.logger = logger;
+        this.enabled.set(enabled);
+
         logger.debug("{} cache initialized", clazzName);
+    }
+
+    public boolean isEnabled() {
+        return enabled.get();
+    }
+
+    public void setEnabled(boolean enable) {
+        this.enabled.set(enable);
     }
 
     public void update() {
@@ -35,6 +52,24 @@ public abstract class CacheBase<M extends MessageBase<? extends HeaderBase, B>, 
         for (String key : keys) {
             cacheMap.remove(key);
             logger.debug("remove key={} and cache map size={}", key, cacheMap.size());
+        }
+    }
+
+    public boolean isIncluded(M message) {
+        return isIncluded(message.getProtocolKey());
+    }
+
+    public boolean isIncluded(HeaderBase header) {
+        return isIncluded(header.getProtocolKey());
+    }
+
+    public boolean isIncluded(ProtocolKey key) {
+        return includedKeys.contains(key);
+    }
+
+    public void registerProtocolKey(ProtocolKey key) {
+        if (!includedKeys.contains(key)) {
+            includedKeys.add(key);
         }
     }
 
@@ -51,6 +86,11 @@ public abstract class CacheBase<M extends MessageBase<? extends HeaderBase, B>, 
     }
 
     public void putMessage(String key, M message) {
+        ProtocolKey pkey = message.getProtocolKey();
+        if (!isIncluded(pkey)) {
+            logger.debug("message with key={} is not included in cache", pkey);
+            return;
+        }
         Cache cache = cacheMap.get(key);
         if (cache == null) {
             cache = new Cache(key);

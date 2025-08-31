@@ -18,6 +18,7 @@
         <spring.boot.version>3.5.4</spring.boot.version>
         <vscodelife.socketio.version>0.0.1-SNAPSHOT</vscodelife.socketio.version>
         <vscodelife.serversocket.version>0.0.1-SNAPSHOT</vscodelife.serversocket.version>
+        <vscodelife.clientsocket.version>0.0.1-SNAPSHOT</vscodelife.clientsocket.version>
         <fastjson.version>2.0.52</fastjson.version>
         <joda.time.version>2.12.7</joda.time.version>
         <lombok.version>1.18.30</lombok.version>
@@ -30,11 +31,11 @@
     <modules>
         <module>../socketio</module>
         <module>../serversocket</module>
-        <!-- 以下模組將在創建後啟用 -->
-        <!-- <module>../clientsocket</module> -->
+        <module>../clientsocket</module>
+        <module>../demo</module>        
+        <!-- 以下模組將在創建後啟用 -->        
         <!-- <module>../websocket</module> -->
         <!-- <module>../webserver</module> -->
-        <module>../demo</module>
     </modules>
     
     <dependencyManagement>
@@ -48,6 +49,11 @@
                 <groupId>com.vscodelife</groupId>
                 <artifactId>serversocket</artifactId>
                 <version>${vscodelife.serversocket.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>clientsocket</artifactId>
+                <version>${vscodelife.clientsocket.version}</version>
             </dependency>
 
             <dependency>

@@ -1,6 +1,5 @@
-package com.vscodelife.serversocket.socket;
+package com.vscodelife.serversocket;
 
-import java.lang.reflect.Constructor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,10 +31,10 @@ public abstract class ByteSocket<H extends HeaderBase, C extends IConnection<Byt
             .newSingleThreadScheduledExecutor(ExecutorUtil.makeName("bytesocketschedulepool"));
 
     protected ByteSocket(Logger logger, int port, int limitConnect,
-            Class<? extends ChannelInitializer<SocketChannel>> initializerClass) {
-        super(logger, port, limitConnect, initializerClass);
+            Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) {
+        super(logger, port, limitConnect, initializerClazz);
 
-        registerProtocol(ProtocolId.PING, catchException(message -> ping(message)));
+        protocolRegister.registerProtocol(ProtocolId.PING, catchException(message -> ping(message)));
     }
 
     @Override
@@ -43,25 +42,11 @@ public abstract class ByteSocket<H extends HeaderBase, C extends IConnection<Byt
         return new ByteCache<>();
     }
 
-    @Override
-    protected ChannelInitializer<SocketChannel> createInitializer(
-            Class<? extends ChannelInitializer<SocketChannel>> initializerClass) throws Exception {
-        ChannelInitializer<SocketChannel> handler = null;
-        if (initializerClass != null) {
-            Constructor<?> ctor = initializerClass.getDeclaredConstructor(ByteSocket.class);
-            ctor.setAccessible(true);
-            handler = initializerClass.cast(ctor.newInstance(this));
-        } else {
-            throw new Exception("initializer class can not be null");
-        }
-        return handler;
-    }
-
     @SuppressWarnings({ "static-access" })
     @Override
     public void run() {
         try {
-            ChannelInitializer<SocketChannel> handler = createInitializer(initializerClass);
+            ChannelInitializer<SocketChannel> handler = createInitializer(initializerClazz);
             bossGroup = new NioEventLoopGroup();
             workerGroup = new NioEventLoopGroup();
             bootStrap = new ServerBootstrap();
@@ -77,7 +62,7 @@ public abstract class ByteSocket<H extends HeaderBase, C extends IConnection<Byt
                 process();
                 Thread.currentThread().sleep(100);
             }
-            f.channel().closeFuture();
+            channel.closeFuture().sync();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         } finally {

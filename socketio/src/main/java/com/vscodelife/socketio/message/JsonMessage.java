@@ -1,9 +1,12 @@
 package com.vscodelife.socketio.message;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.vscodelife.socketio.message.base.HeaderBase;
 import com.vscodelife.socketio.message.base.MessageBase;
 
 public class JsonMessage<H extends HeaderBase> extends MessageBase<H, String> {
+    private JSONObject jsonBody;
+
     public JsonMessage() {
         super();
     }
@@ -43,5 +46,26 @@ public class JsonMessage<H extends HeaderBase> extends MessageBase<H, String> {
         } catch (Exception e) {
             throw new RuntimeException("Failed to clone JsonMessage: " + e.getMessage(), e);
         }
+    }
+
+    public int getIntValue(String key) {
+        if (jsonBody == null) {
+            jsonBody = JSONObject.parseObject(getBuffer());
+        }
+        return jsonBody.getIntValue(key);
+    }
+
+    public String getStringValue(String key) {
+        if (jsonBody == null) {
+            jsonBody = JSONObject.parseObject(getBuffer());
+        }
+        return jsonBody.getString(key);
+    }
+
+    public <T> T parseValue(String key, Class<T> clazz) {
+        if (jsonBody == null) {
+            jsonBody = JSONObject.parseObject(getBuffer());
+        }
+        return jsonBody.getObject(key, clazz);
     }
 }

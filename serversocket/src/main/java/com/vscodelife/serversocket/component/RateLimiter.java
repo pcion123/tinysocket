@@ -1,4 +1,4 @@
-package com.vscodelife.serversocket.socket.component;
+package com.vscodelife.serversocket.component;
 
 import com.vscodelife.socketio.util.RandomUtil;
 

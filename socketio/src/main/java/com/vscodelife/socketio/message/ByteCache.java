@@ -13,4 +13,8 @@ public class ByteCache<H extends HeaderBase> extends CacheBase<ByteMessage<H>, B
     public ByteCache() {
         super(logger, ByteCache.class.getSimpleName());
     }
+
+    public ByteCache(boolean enabled) {
+        super(logger, ByteCache.class.getSimpleName(), enabled);
+    }
 }

@@ -12,4 +12,8 @@ public class JsonCache<H extends HeaderBase> extends CacheBase<JsonMessage<H>, S
     public JsonCache() {
         super(logger, JsonCache.class.getSimpleName());
     }
+
+    public JsonCache(boolean enabled) {
+        super(logger, JsonCache.class.getSimpleName(), enabled);
+    }
 }

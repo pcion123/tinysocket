@@ -1,10 +1,17 @@
 # ServerSocket 服務器端Socket模組
 
-這是 tinysocket 專案的服務器端 Socket 模組，基於 socketio 核心庫實現高性能的 Socket 服務器。
+ServerSocket 是 TinySocket 專案的服務器端 Socket 實現模組，基於 socketio 核心庫構建的高性能、高併發 Socket 服務器框架。它提供完整的泛型設計架構，支援二進制和 JSON 兩種通信協議，內建豐富的組件系統，為企業級應用提供生產就緒的 Socket 服務器解決方案。
 
 ## 📋 模組概述
 
-ServerSocket 模組是 tinysocket 框架的服務器端實現，提供了完整的 Socket 服務器解決方案。它基於 Netty 框架和 socketio 核心庫，為各種網絡應用場景提供高性能、高併發的服務器實現。
+ServerSocket 模組實現了 TinySocket 框架的服務器端核心功能，採用基於 Netty 4.1.115 的異步 I/O 架構和完整的泛型設計。它不僅提供高性能的網络通信能力，還內建了限流保護、協議異常處理、性能監控等企業級特性，讓開發者能夠快速構建穩定可靠的 Socket 服務器應用。
+
+### 🎯 設計理念
+
+- **泛型架構**: 完整的泛型設計，支援自定義 Header、Connection、Message 和 Buffer 類型
+- **生產就緒**: 內建限流、監控、異常處理等企業級功能，可直接用於生產環境
+- **組件化**: 可插拔的組件系統，支援靈活的功能擴展和自定義
+- **Spring Boot 整合**: 與 Spring Boot 3.5.4 完美整合，支援自動配置和監控
 
 ## 🏗️ 架構設計
 

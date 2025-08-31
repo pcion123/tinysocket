@@ -1,33 +1,35 @@
-package com.vscodelife.serversocket.socket.connection;
+package com.vscodelife.serversocket.connection;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vscodelife.socketio.buffer.ByteArrayBuffer;
 import com.vscodelife.socketio.connection.IConnection;
 import com.vscodelife.socketio.constant.ProtocolId;
 import com.vscodelife.socketio.util.DateUtil;
+import com.vscodelife.socketio.util.JsonUtil;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-public abstract class ByteConnection implements IConnection<ByteArrayBuffer> {
-    protected static final Logger logger = LoggerFactory.getLogger(ByteConnection.class);
+public abstract class JsonConnection implements IConnection<String> {
+    protected static final Logger logger = LoggerFactory.getLogger(JsonConnection.class);
 
     protected Channel channel;
     protected String version;
     protected long sessionId;
     protected long connectTime;
 
-    protected ByteConnection() {
+    protected JsonConnection() {
         this(null, "0.0.1", 0L, 0L);
     }
 
-    protected ByteConnection(Channel channel, String version, long sessionId, long connectTime) {
+    protected JsonConnection(Channel channel, String version, long sessionId, long connectTime) {
         this.channel = channel;
         this.version = version;
         this.sessionId = sessionId;
@@ -145,7 +147,7 @@ public abstract class ByteConnection implements IConnection<ByteArrayBuffer> {
 
     @Override
     public void disconnect() {
-        send(ProtocolId.DISCONNECT, new ByteArrayBuffer());
+        send(ProtocolId.DISCONNECT, "");
 
         if (channel != null) {
             channel.close();
@@ -164,14 +166,14 @@ public abstract class ByteConnection implements IConnection<ByteArrayBuffer> {
 
     @Override
     public void sendServerBusyMessage(int mainNo, int subNo, long requestId) {
-        ByteArrayBuffer buffer = new ByteArrayBuffer();
-        buffer.writeInt(503);
-        buffer.writeString("server is busy");
-        send(mainNo, subNo, requestId, buffer);
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", 503);
+        params.put("message", "server is busy");
+        send(mainNo, subNo, requestId, JsonUtil.toJson(params));
     }
 
     @Override
-    public void send(int mainNo, int subNo, ByteArrayBuffer buffer) {
+    public void send(int mainNo, int subNo, String buffer) {
         send(mainNo, subNo, 0L, buffer);
     }
 }

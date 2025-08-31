@@ -1,5 +1,6 @@
-package com.vscodelife.serversocket.socket;
+package com.vscodelife.serversocket;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,8 +12,9 @@ import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 
-import com.vscodelife.serversocket.socket.component.ProtocolCatcher;
-import com.vscodelife.serversocket.socket.component.RateLimiter;
+import com.vscodelife.serversocket.component.ProtocolCatcher;
+import com.vscodelife.serversocket.component.ProtocolRegister;
+import com.vscodelife.serversocket.component.RateLimiter;
 import com.vscodelife.socketio.connection.IConnection;
 import com.vscodelife.socketio.message.base.CacheBase;
 import com.vscodelife.socketio.message.base.HeaderBase;
@@ -47,7 +49,7 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
     protected static final int DEFAULT_UPDATE_CACHE_MANAGER_INTERVAL = 60;
 
     protected final Logger logger;
-    protected final Class<? extends ChannelInitializer<SocketChannel>> initializerClass;
+    protected final Class<? extends ChannelInitializer<SocketChannel>> initializerClazz;
     protected final Map<Long, C> connectionMap = new ConcurrentHashMap<Long, C>();
     protected final int port;
 
@@ -58,7 +60,6 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
     protected final AtomicBoolean running = new AtomicBoolean(true);
 
     protected final Queue<M> messageQueue = new LinkedBlockingQueue<>();
-    protected final Map<ProtocolKey, Consumer<M>> processMap = new ConcurrentHashMap<>();
 
     protected EventLoopGroup bossGroup;
     protected EventLoopGroup workerGroup;
@@ -67,9 +68,10 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
 
     protected final RateLimiter rateLimiter = new RateLimiter();
     protected final CacheBase<M, B> cacheManager;
+    protected final ProtocolRegister<H, C, M, B> protocolRegister;
 
     protected SocketBase(Logger logger, int port, int limitConnect,
-            Class<? extends ChannelInitializer<SocketChannel>> initializerClass) {
+            Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) {
         // 參數驗證
         if (logger == null) {
             throw new IllegalArgumentException("Logger cannot be null");
@@ -80,20 +82,29 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         if (limitConnect <= 0) {
             throw new IllegalArgumentException("Limit connect must be positive, got: " + limitConnect);
         }
-        if (initializerClass == null) {
+        if (initializerClazz == null) {
             throw new IllegalArgumentException("Initializer class cannot be null");
         }
 
         this.logger = logger;
-        this.initializerClass = initializerClass;
+        this.initializerClazz = initializerClazz;
         this.limitConnect = limitConnect;
         this.port = port;
 
         this.cacheManager = createCacheInstance();
 
+        // 初始化協議註冊器（明確指定泛型類型）
+        this.protocolRegister = new ProtocolRegister<H, C, M, B>(
+                this.cacheManager,
+                this::getConnection, // 連接提供者
+                handler -> catchException(handler::accept) // 異常處理器適配器
+        );
+
         logger.info("Initialized SocketBase with port={}, limitConnect={}, initializer={}",
-                port, limitConnect, initializerClass.getSimpleName());
+                port, limitConnect, initializerClazz.getSimpleName());
     }
+
+    public abstract Class<? extends SocketBase<H, C, M, B>> getSocketClazz();
 
     public boolean isBinding() {
         return channel != null ? channel.isActive() : false;
@@ -140,8 +151,18 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
 
     protected abstract CacheBase<M, B> createCacheInstance() throws RuntimeException;
 
-    protected abstract ChannelInitializer<SocketChannel> createInitializer(
-            Class<? extends ChannelInitializer<SocketChannel>> initializerClass) throws Exception;
+    protected ChannelInitializer<SocketChannel> createInitializer(
+            Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) throws Exception {
+        ChannelInitializer<SocketChannel> handler = null;
+        if (initializerClazz != null) {
+            Constructor<?> ctor = initializerClazz.getDeclaredConstructor(getSocketClazz());
+            ctor.setAccessible(true);
+            handler = initializerClazz.cast(ctor.newInstance(this));
+        } else {
+            throw new Exception("initializer class can not be null");
+        }
+        return handler;
+    }
 
     /**
      * 使用反射創建連接實例（預設實現）
@@ -172,8 +193,6 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
             return null;
         }
     }
-
-    public abstract void run();
 
     public abstract void bind();
 
@@ -394,81 +413,6 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         return connection;
     }
 
-    // ==================== 協議處理增強 ====================
-
-    /**
-     * 註冊協議處理器（帶型別安全）
-     * 
-     * @param mainNo  主協議號
-     * @param subNo   子協議號
-     * @param handler 處理器
-     */
-    protected void registerProtocol(int mainNo, int subNo, Consumer<M> handler) {
-        registerProtocol(new ProtocolKey(mainNo, subNo), handler);
-    }
-
-    protected void registerProtocol(ProtocolKey key, Consumer<M> handler) {
-        processMap.put(key, handler);
-        logger.debug("Registered protocol {}-{}", key.getMainNo(), key.getSubNo());
-    }
-
-    /**
-     * 批量註冊協議處理器
-     * 
-     * @param protocols 協議映射表
-     */
-    protected void registerProtocols(Map<ProtocolKey, Consumer<M>> protocols) {
-        processMap.putAll(protocols);
-        logger.debug("Batch registered {} protocols", protocols.size());
-    }
-
-    /**
-     * 安全的協議分發（增強錯誤處理）
-     * 
-     * @param message 消息
-     */
-    protected void dispatcherSafe(M message) {
-        if (message == null) {
-            logger.warn("Received null message, skipping dispatch");
-            return;
-        }
-
-        HeaderBase header = message.getHeader();
-        if (header == null) {
-            logger.warn("Message has null header, skipping dispatch");
-            return;
-        }
-
-        dispatcher(message);
-    }
-
-    public void unregisterProtocol(int mainNo, int subNo) {
-        ProtocolKey key = new ProtocolKey(mainNo, subNo);
-        processMap.remove(key);
-    }
-
-    /**
-     * 檢查指定協定是否已註冊
-     */
-    public boolean isProtocolRegistered(int mainNo, int subNo) {
-        ProtocolKey key = new ProtocolKey(mainNo, subNo);
-        return processMap.containsKey(key);
-    }
-
-    /**
-     * 獲取已註冊協定的數量
-     */
-    public int getRegisteredProtocolCount() {
-        return processMap.size();
-    }
-
-    /**
-     * 清除所有已註冊的協定
-     */
-    public void clearAllProtocols() {
-        processMap.clear();
-    }
-
     protected void process() {
         try {
             while (!messageQueue.isEmpty()) {
@@ -501,6 +445,26 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         return messageQueue.size() > 0 ? messageQueue.poll() : null;
     }
 
+    /**
+     * 安全的協議分發（增強錯誤處理）
+     * 
+     * @param message 消息
+     */
+    protected void dispatcherSafe(M message) {
+        if (message == null) {
+            logger.warn("Received null message, skipping dispatch");
+            return;
+        }
+
+        HeaderBase header = message.getHeader();
+        if (header == null) {
+            logger.warn("Message has null header, skipping dispatch");
+            return;
+        }
+
+        dispatcher(message);
+    }
+
     protected void dispatcher(M message) {
         HeaderBase header = message.getHeader();
         long sessionId = header.getSessionId();
@@ -508,7 +472,7 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         int mainNo = header.getMainNo();
         int subNo = header.getSubNo();
         ProtocolKey key = header.getProtocolKey();
-        if (rateLimiter != null && rateLimiter.pass()) {
+        if (rateLimiter != null && !rateLimiter.pass()) {
             try {
                 IConnection<B> connection = getConnection(sessionId);
                 if (connection != null) {
@@ -520,7 +484,7 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
                         requestId, mainNo, subNo, e.getMessage()), e);
             }
         } else {
-            Consumer<M> processor = processMap.get(key);
+            Consumer<M> processor = protocolRegister.getProtocolHandler(key);
             if (processor != null) {
                 String profilerName = "socket-dispatcher";
                 String executeName = ProfilerUtil.executeStart(profilerName);

@@ -1,10 +1,12 @@
 # SocketIO 核心通信庫
 
-這是 tinysocket 專案的核心 Socket 通信庫，提供了完整的網絡通信基礎設施和工具類。
+SocketIO 是 TinySocket 專案的核心通信庫，提供完整的高性能網絡通信基礎設施。作為整個框架的基石，它為 TinySocket 生態系統提供統一的通信協議、高性能緩衝區管理、結構化訊息處理和豐富的工具類庫。
 
-## 📋 項目概述
+## 📋 模組概述
 
-SocketIO 模塊是 tinysocket 框架的核心組件，提供了一套完整的 Socket 通信解決方案。它不是傳統的 Socket.IO 實現，而是一個基於 Netty 的自定義 Socket 通信框架，為整個 tinysocket 生態系統提供基礎服務。
+SocketIO 模組是 TinySocket 框架的心臟組件，提供了企業級的 Socket 通信解決方案。它不是傳統的 Socket.IO 實現，而是一個基於 Netty 4.1.115 和 Java 21 的現代化自定義 Socket 通信框架，專為高性能、高併發和生產環境設計。
+
+**注意**: 本模組命名為 socketio，但與 Node.js 的 Socket.IO 協議無關，它是 TinySocket 專案的自定義通信協議實現。
 
 ## 🏗️ 架構設計
 
@@ -773,20 +775,22 @@ public void testSnowflakeUtilConcurrency() throws InterruptedException {
 ### 🏗️ 已實現模組
 - **[serversocket](../serversocket/)**: 服務器端Socket實現
   - 基於 SocketBase 泛型設計
-  - 使用 ByteArrayBuffer 進行數據傳輸
-  - 集成 ProfilerUtil 性能監控
+  - ByteSocket/JsonSocket 高性能服務器
+  - 組件化架構和Spring Boot整合
+- **[clientsocket](../clientsocket/)**: 客戶端Socket實現
+  - 智能重連和心跳保持機制
+  - 泛型客戶端架構設計
+  - 協議處理器註冊系統
+- **[demo](../demo/)**: 完整示範應用
+  - 服務器和客戶端完整實現示例
+  - 協議處理和錯誤處理演示
+  - 性能測試和最佳實踐展示
 
-### 🔄 開發中模組  
-- **clientsocket**: 客戶端Socket實現
-  - 自動重連機制
-  - 連接池管理
-  - 負載均衡支援
+### 🔄 計劃中模組  
 - **websocket**: WebSocket協議支援
   - HTTP升級協議處理
   - 瀏覽器客戶端支援  
-  - 實時通信優化
-
-### 🎯 計劃中模組
+  - 實時通信優化### 🎯 計劃中模組
 - **tinysocket-spring-boot-starter**: Spring Boot自動配置
 - **tinysocket-monitoring**: 監控和度量模組
 - **tinysocket-security**: 安全和加密模組

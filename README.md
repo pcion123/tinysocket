@@ -4,7 +4,7 @@ TinySocket是一個基於Netty的高性能、模組化網絡通信框架，提�
 
 ## 🏗️ 專案架構
 
-TinySocket採用Maven多模組架構設計，目前包含兩個核心模組：
+TinySocket採用Maven多模組架構設計，目前包含四個核心模組：
 
 ```
 tinysocket/
@@ -24,14 +24,36 @@ tinysocket/
 │   └── pom.xml
 ├── serversocket/          # 服務器端Socket實現 🚀
 │   ├── src/main/java/com/vscodelife/serversocket/
-│   │   └── socket/        # Socket服務器實現
-│   │       ├── ByteSocket.java      # 二進制Socket服務器
-│   │       ├── JsonSocket.java      # JSON Socket服務器
-│   │       ├── SocketBase.java      # Socket服務器基類
-│   │       ├── component/           # 組件系統
-│   │       │   ├── RateLimiter.java    # 限流器
-│   │       │   └── ProtocolCatcher.java # 協議捕獲器
-│   │       └── connection/          # 連接管理實現
+│   │   ├── ByteSocket.java      # 二進制Socket服務器
+│   │   ├── JsonSocket.java      # JSON Socket服務器
+│   │   ├── SocketBase.java      # Socket服務器基類
+│   │   ├── component/           # 組件系統
+│   │   │   ├── RateLimiter.java    # 限流器
+│   │   │   └── ProtocolCatcher.java # 協議捕獲器
+│   │   └── connection/          # 連接管理實現
+│   └── pom.xml
+├── clientsocket/          # 客戶端Socket實現 🔗
+│   ├── src/main/java/com/vscodelife/clientsocket/
+│   │   ├── SocketBase.java      # Socket客戶端基類
+│   │   ├── ByteSocket.java      # 二進制Socket客戶端
+│   │   ├── JsonSocket.java      # JSON Socket客戶端
+│   │   ├── IClient.java         # 客戶端接口定義
+│   │   ├── Connector.java       # 連接器實現
+│   │   └── component/           # 組件系統
+│   │       └── ProtocolCatcher.java # 協議異常捕獲器
+│   └── pom.xml
+├── demo/                  # 完整示範應用 🎯
+│   ├── src/main/java/com/vscodelife/demo/
+│   │   ├── DemoByteServer.java  # 服務器啟動示例
+│   │   ├── DemoByteClient.java  # 客戶端啟動示例
+│   │   ├── server/              # 服務器端完整實現
+│   │   │   ├── TestByteServer.java      # 測試服務器
+│   │   │   ├── ByteUserHeader.java      # 自定義Header
+│   │   │   ├── ByteUserConnection.java  # 自定義Connection
+│   │   │   └── ByteInitializer.java     # Netty初始化器
+│   │   └── client/              # 客戶端完整實現
+│   │       ├── TestByteClient.java      # 測試客戶端
+│   │       └── handler/                 # 客戶端處理器
 │   └── pom.xml
 ├── .vscode/               # VS Code開發配置
 ├── mvnw & mvnw.cmd       # Maven Wrapper
@@ -465,15 +487,19 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
   - [x] ByteSocket/JsonSocket高性能服務器
   - [x] SocketBase泛型基類設計
   - [x] 組件化架構(RateLimiter、ProtocolCatcher)
+- [x] **clientsocket**: 客戶端Socket實現 ✅ 完成
+  - [x] ByteSocket/JsonSocket智能客戶端
+  - [x] 自動重連機制
+  - [x] 心跳保持機制
+- [x] **demo**: 完整示範應用 ✅ 完成
+  - [x] 服務器和客戶端完整示例
+  - [x] 協議處理演示
+  - [x] 性能測試用例
 - [ ] **測試完善**: 提升測試覆蓋率至90%以上
 - [ ] **文檔完善**: API文檔和使用指南
 - [ ] **性能優化**: 基準測試和性能調優
 
 ### 🚀 中期目標（v0.2.0 - v0.3.0）
-- [ ] **clientsocket**: 客戶端Socket實現
-  - [ ] 自動重連機制
-  - [ ] 連接池管理
-  - [ ] 負載均衡支援
 - [ ] **websocket**: WebSocket協議支援
   - [ ] WebSocket服務器實現
   - [ ] HTTP升級協議處理
@@ -518,9 +544,10 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 
 - 📖 **[SocketIO API文檔](./socketio/README.md)**: 核心庫詳細API使用指南
 - 🌐 **[ServerSocket使用文檔](./serversocket/README.md)**: 服務器模組使用指南
-- 💻 **[代碼示例](./examples/)**: 完整的使用示例和最佳實踐
-- 🎯 **最佳實踐**: 生產環境部署和性能調優建議
-- 🔧 **擴展開發**: 如何開發自定義Socket類型和組件
+- � **[ClientSocket使用文檔](./clientsocket/README.md)**: 客戶端模組使用指南
+- 🎯 **[Demo示範應用](./demo/README.md)**: 完整的使用示例和最佳實踐
+- 💻 **代碼示例**: 實用的代碼示例庫，展示各種使用場景
+- 🔧 **最佳實踐**: 生產環境部署和性能調優建議
 - 📊 **性能調優**: 針對高併發場景的優化技巧
 
 ## 📈 性能基準
@@ -588,9 +615,10 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 *讓網絡通信變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年8月26日  
+> **最後更新**: 2025年8月31日  
 > **Java版本**: OpenJDK 21+  
 > **Spring Boot版本**: 3.5.4
+> **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
 [![GitHub Forks](https://img.shields.io/github/forks/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
