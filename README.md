@@ -1,62 +1,100 @@
 # TinySocket 高性能網絡通信框架
 
-TinySocket是一個基於Netty的高性能、模組化網絡通信框架，提供完整的Socket通信解決方案。
+TinySocket 是一個基於 Netty 的高性能、模組化網絡通信框架，提供完整的 Socket 通信解決方案。採用現代化的 Java 21 技術棧，結合 Spring Boot 3.x 生態系統，為企業級應用提供生產就緒的網絡通信基礎設施。
 
 ## 🏗️ 專案架構
 
-TinySocket採用Maven多模組架構設計，目前包含四個核心模組：
+TinySocket 採用 Maven 多模組架構設計，由四個核心模組組成，形成完整的網絡通信生態系統：
 
 ```
 tinysocket/
-├── pom/                    # Maven父專案配置 📦
-│   └── pom.xml            # 父POM文件（統一依賴管理）
-├── socketio/              # 核心Socket通信庫 ⭐
+├── pom/                   # Maven 父專案配置 📦
+│   └── pom.xml           # 統一依賴管理，技術棧版本控制
+├── socketio/             # 核心通信庫 ⭐
 │   ├── src/main/java/com/vscodelife/socketio/
-│   │   ├── annotation/    # 註解系統 (@MessageTag)
-│   │   ├── buffer/        # 高性能緩衝區 (ByteArrayBuffer)
-│   │   ├── connection/    # 連接管理接口 (IConnection)
-│   │   ├── constant/      # 協議常數定義 (ProtocolId)
-│   │   ├── message/       # 結構化訊息處理 (ByteMessage/JsonMessage)
-│   │   │   └── base/      # 訊息基礎類
-│   │   └── util/          # 豐富工具類庫
-│   │       ├── http/      # HTTP工具類
-│   │       └── profiler/  # 性能分析工具
+│   │   ├── annotation/   # 註解系統
+│   │   │   ├── MessageTag.java    # 序列化註解
+│   │   │   └── ProtocolTag.java   # 協議處理註解
+│   │   ├── buffer/       # 高性能緩衝區系統
+│   │   │   └── ByteArrayBuffer.java # 零拷貝緩衝區
+│   │   ├── connection/   # 連接管理接口
+│   │   │   └── IConnection.java   # 通用連接接口
+│   │   ├── constant/     # 協議常數定義
+│   │   │   └── ProtocolId.java    # 內建協議ID
+│   │   ├── message/      # 結構化訊息系統
+│   │   │   ├── ByteMessage.java   # 二進制訊息
+│   │   │   ├── JsonMessage.java   # JSON訊息
+│   │   │   ├── ByteCache.java     # 二進制訊息快取
+│   │   │   ├── JsonCache.java     # JSON訊息快取
+│   │   │   └── base/              # 訊息基礎類
+│   │   │       ├── HeaderBase.java    # 訊息頭基類
+│   │   │       ├── MessageBase.java   # 訊息基類
+│   │   │       ├── CacheBase.java     # 快取基類
+│   │   │       ├── ProtocolKey.java   # 協議鍵
+│   │   │       └── ProtocolReg.java   # 協議註冊
+│   │   └── util/         # 工具類庫
+│   │       ├── JsonUtil.java          # JSON 處理
+│   │       ├── SnowflakeUtil.java     # 分散式ID
+│   │       ├── DateUtil.java          # 日期處理
+│   │       ├── NettyUtil.java         # Netty 工具
+│   │       ├── JwtUtil.java           # JWT 工具
+│   │       ├── Base64Util.java        # Base64 工具
+│   │       ├── ExecutorUtil.java      # 執行緒池工具
+│   │       ├── profiler/              # 性能分析
+│   │       │   ├── ProfilerUtil.java      # 性能分析工具
+│   │       │   ├── ProfilerCounter.java   # 計數器
+│   │       │   ├── ProfilerConfig.java    # 配置
+│   │       │   └── ProfilerCounterManager.java # 管理器
+│   │       └── http/                  # HTTP 工具
+│   │           ├── HttpUtil.java          # HTTP 客戶端
+│   │           └── HttpResponse.java      # HTTP 回應
 │   └── pom.xml
-├── serversocket/          # 服務器端Socket實現 🚀
+├── serversocket/         # 服務器端 Socket 實現 🚀
 │   ├── src/main/java/com/vscodelife/serversocket/
-│   │   ├── ByteSocket.java      # 二進制Socket服務器
-│   │   ├── JsonSocket.java      # JSON Socket服務器
-│   │   ├── SocketBase.java      # Socket服務器基類
-│   │   ├── component/           # 組件系統
-│   │   │   ├── RateLimiter.java    # 限流器
-│   │   │   └── ProtocolCatcher.java # 協議捕獲器
-│   │   └── connection/          # 連接管理實現
+│   │   ├── SocketBase.java            # Socket 服務器基類（泛型設計）
+│   │   ├── ByteSocket.java            # 二進制 Socket 服務器
+│   │   ├── JsonSocket.java            # JSON Socket 服務器
+│   │   ├── component/                 # 組件系統
+│   │   │   ├── RateLimiter.java           # 限流器組件
+│   │   │   ├── ProtocolCatcher.java       # 協議異常捕獲器
+│   │   │   └── ProtocolRegister.java      # 協議註冊器
+│   │   └── connection/                # 連接管理實現
+│   │       ├── ByteConnection.java        # 二進制連接
+│   │       └── JsonConnection.java        # JSON 連接
 │   └── pom.xml
-├── clientsocket/          # 客戶端Socket實現 🔗
+├── clientsocket/         # 客戶端 Socket 實現 🔗
 │   ├── src/main/java/com/vscodelife/clientsocket/
-│   │   ├── SocketBase.java      # Socket客戶端基類
-│   │   ├── ByteSocket.java      # 二進制Socket客戶端
-│   │   ├── JsonSocket.java      # JSON Socket客戶端
-│   │   ├── IClient.java         # 客戶端接口定義
-│   │   ├── Connector.java       # 連接器實現
-│   │   └── component/           # 組件系統
-│   │       └── ProtocolCatcher.java # 協議異常捕獲器
+│   │   ├── SocketBase.java            # Socket 客戶端基類（泛型設計）
+│   │   ├── ByteSocket.java            # 二進制 Socket 客戶端
+│   │   ├── JsonSocket.java            # JSON Socket 客戶端
+│   │   ├── IClient.java               # 客戶端接口定義
+│   │   ├── Connector.java             # 連接器實現
+│   │   └── component/                 # 組件系統
+│   │       └── ProtocolCatcher.java       # 協議異常捕獲器
 │   └── pom.xml
-├── demo/                  # 完整示範應用 🎯
+├── demo/                 # 完整示範應用 🎯
 │   ├── src/main/java/com/vscodelife/demo/
-│   │   ├── DemoByteServer.java  # 服務器啟動示例
-│   │   ├── DemoByteClient.java  # 客戶端啟動示例
-│   │   ├── server/              # 服務器端完整實現
-│   │   │   ├── TestByteServer.java      # 測試服務器
-│   │   │   ├── ByteUserHeader.java      # 自定義Header
-│   │   │   ├── ByteUserConnection.java  # 自定義Connection
-│   │   │   └── ByteInitializer.java     # Netty初始化器
-│   │   └── client/              # 客戶端完整實現
-│   │       ├── TestByteClient.java      # 測試客戶端
-│   │       └── handler/                 # 客戶端處理器
+│   │   ├── DemoByteServer.java        # 服務器啟動示例
+│   │   ├── DemoByteClient.java        # 客戶端啟動示例
+│   │   ├── User.java                  # 用戶實體類
+│   │   ├── server/                    # 服務器端完整實現
+│   │   │   ├── TestByteServer.java        # 測試服務器
+│   │   │   ├── ByteUserHeader.java        # 自定義 Header
+│   │   │   ├── ByteUserConnection.java    # 自定義 Connection
+│   │   │   ├── ByteInitializer.java       # Netty 初始化器
+│   │   │   └── ByteProtocol.java          # 協議處理器（註解驅動）
+│   │   └── client/                    # 客戶端完整實現
+│   │       ├── TestByteClient.java        # 測試客戶端
+│   │       ├── ByteUserHeader.java        # 客戶端 Header
+│   │       ├── ByteInitializer.java       # 客戶端初始化器
+│   │       ├── ByteProtocol.java          # 客戶端協議處理
+│   │       └── handler/               # 客戶端處理器
+│   │           ├── ByteConnectHandler.java
+│   │           ├── ByteHeaderDecoderHandler.java
+│   │           └── ByteHeaderEncoderHandler.java
 │   └── pom.xml
-├── .vscode/               # VS Code開發配置
-├── mvnw & mvnw.cmd       # Maven Wrapper
+├── .vscode/              # VS Code 開發環境配置
+├── mvnw & mvnw.cmd      # Maven Wrapper
 └── README.md
 ```
 

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vscodelife.demo.server.ByteUserConnection;
 import com.vscodelife.demo.server.TestByteServer;
+import com.vscodelife.socketio.buffer.ByteArrayBuffer;
+import com.vscodelife.socketio.constant.ProtocolId;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -27,7 +29,15 @@ public class ByteConnectHandler extends ChannelDuplexHandler {
         // 取得當前連線的channel
         Channel incoming = ctx.channel();
         // 將連線加入管理
-        socket.putConnection(incoming);
+        if (socket.putConnection(incoming)) {
+            ByteUserConnection connection = socket.getConnection(incoming);
+            if (connection != null) {
+                ByteArrayBuffer response = new ByteArrayBuffer();
+                response.writeLong(connection.getSessionId());
+                connection.send(ProtocolId.NOTIFY_SESSION_ID, response);
+            }
+        }
+
         logger.info("client: {} is online channelId={}", incoming.remoteAddress(), incoming.id());
     }
 

@@ -11,8 +11,11 @@ public class TestByteServer extends ByteSocket<ByteUserHeader, ByteUserConnectio
     public TestByteServer(int port, int maxConnectionLimit) {
         super(logger, port, maxConnectionLimit, ByteInitializer.class);
 
-        // registerProtocol(ProtocolId.AUTH_RESULT, catchException(message ->
-        // auth(message)));
+        ByteProtocol.server = this;
+
+        int protocolCount = protocolRegister.scanAndRegisterProtocols(ByteProtocol.class);
+
+        logger.info("reg protocol count={}", protocolCount);
     }
 
     @Override

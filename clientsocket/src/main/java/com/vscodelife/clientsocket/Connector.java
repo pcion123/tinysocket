@@ -182,6 +182,14 @@ public class Connector<H extends HeaderBase, M extends MessageBase<H, B>, B> imp
         return port;
     }
 
+    public long getSessionId() {
+        return sessionId.get();
+    }
+
+    public void setSessionId(long sessionId) {
+        this.sessionId.set(sessionId);
+    }
+
     public <T> T getProperty(Class<T> clazz, String property) {
         if (channel == null) {
             logger.warn("Cannot get property '{}': channel is null", property);

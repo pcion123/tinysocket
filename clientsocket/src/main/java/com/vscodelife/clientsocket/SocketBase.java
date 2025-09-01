@@ -62,6 +62,12 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
 
     public void setSessionId(long id) {
         sessionId.set(id);
+
+        if (connector != null && connector.isConnected()) {
+            synchronized (this) {
+                connector.setSessionId(id);
+            }
+        }
     }
 
     public String getHostname() {

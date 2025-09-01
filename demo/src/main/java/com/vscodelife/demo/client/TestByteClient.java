@@ -1,5 +1,7 @@
 package com.vscodelife.demo.client;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,10 +15,22 @@ import io.netty.channel.ChannelHandlerContext;
 public class TestByteClient extends ByteSocket<ByteUserHeader> {
     private static final Logger logger = LoggerFactory.getLogger(TestByteClient.class);
 
-    public TestByteClient() {
+    private final String userId;
+    private final String password;
+
+    private final AtomicBoolean authed = new AtomicBoolean(false);
+    private String token;
+
+    public TestByteClient(String userId, String password) {
         super(logger, ByteInitializer.class);
 
-        registerProtocol(ProtocolId.AUTH_RESULT, catchException(message -> authResult(message)));
+        this.userId = userId;
+        this.password = password;
+
+        ByteProtocol.client = this;
+
+        registerProtocol(ProtocolId.AUTH_RESULT, catchException(message -> ByteProtocol.rcvAuthResult(message)));
+        registerProtocol(ProtocolId.NOTIFY_SESSION_ID, catchException(message -> ByteProtocol.rcvSessionId(message)));
     }
 
     @Override
@@ -32,11 +46,19 @@ public class TestByteClient extends ByteSocket<ByteUserHeader> {
     @Override
     public void onConnected(long connectorId, ChannelHandlerContext ctx) {
         super.onConnected(connectorId, ctx);
+
+        ByteArrayBuffer request = new ByteArrayBuffer();
+        request.writeString(userId);
+        request.writeString(password);
+        send(ProtocolId.AUTH, request);
     }
 
     @Override
     public void onDisconnected(long connectorId, ChannelHandlerContext ctx) {
         super.onDisconnected(connectorId, ctx);
+
+        authed.set(false);
+        token = null;
     }
 
     @Override
@@ -62,23 +84,27 @@ public class TestByteClient extends ByteSocket<ByteUserHeader> {
         if (isCompress) {
             buffer.compress();
         }
-        // String ip = getIp();
         String ip = "127.0.0.1";
-        String userId = "guest";
-        String token = "abcdefg";
         // 產生header
         ByteUserHeader header = new ByteUserHeader(version, mainNo, subNo, isCompress,
                 sessionId, requestId, userId, token, ip);
         return new ByteMessage<>(header, buffer);
     }
 
-    protected void authResult(ByteMessage<ByteUserHeader> message) {
-        long sessionId = message.getSessionId();
-        long requestId = message.getRequestId();
-        int code = message.getBuffer().readInt();
-        String msg = message.getBuffer().readString();
-        logger.info("sessionId={} requestId={} rcv server notify auth result, code={}, msg={}", sessionId, requestId,
-                code, msg);
+    public boolean isAuthed() {
+        return authed.get();
+    }
+
+    public void setAuth(boolean auth) {
+        this.authed.set(auth);
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
 }

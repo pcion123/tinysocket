@@ -11,6 +11,7 @@ public class ByteUserConnection extends ByteConnection {
 
     private String token;
     private String userId;
+    private boolean authed;
     private long timeout;
 
     public ByteUserConnection() {
@@ -50,6 +51,16 @@ public class ByteUserConnection extends ByteConnection {
         this.userId = userId;
 
         setProperty(String.class, channel, "userId", userId);
+    }
+
+    public boolean isAuthed() {
+        return authed;
+    }
+
+    public void setAuthed(boolean authed) {
+        this.authed = authed;
+
+        setProperty(Boolean.class, channel, "authed", authed);
     }
 
     public long getTimeout() {

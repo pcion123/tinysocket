@@ -108,6 +108,7 @@ public abstract class JsonSocket<H extends HeaderBase, C extends IConnection<Str
         int subNo = header.getSubNo();
         long sessionId = header.getSessionId();
         long requestId = header.getRequestId();
+        logger.info("sessionId={} requestId={} rcv client ask ping request", sessionId, requestId);
         send(sessionId, mainNo, subNo, requestId, "pong");
     }
 }

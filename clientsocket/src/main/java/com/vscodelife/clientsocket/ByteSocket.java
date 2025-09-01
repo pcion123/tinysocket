@@ -13,6 +13,7 @@ import com.vscodelife.socketio.message.ByteMessage;
 import com.vscodelife.socketio.message.base.HeaderBase;
 import com.vscodelife.socketio.util.ExecutorUtil;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
@@ -23,6 +24,7 @@ public abstract class ByteSocket<H extends HeaderBase>
 
     private static final int DEFAULT_MAX_RECONNECT_ATTEMPTS = 5;
     private static final int DEFAULT_RECONNECT_INTERVAL = 5;
+    private static final int DEFAULT_PING_INTERVAL = 30;
 
     // 重連配置
     protected volatile boolean autoReconnect = false;
@@ -34,6 +36,7 @@ public abstract class ByteSocket<H extends HeaderBase>
     private long pingSend;
     private long pingRcv;
     private long pingValue;
+    private ScheduledFuture<?> pingScheduledFuture;
 
     protected ByteSocket(Logger logger,
             Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) {
@@ -57,6 +60,10 @@ public abstract class ByteSocket<H extends HeaderBase>
                     reconnectInterval,
                     TimeUnit.SECONDS);
         }
+        if (pingScheduledFuture != null) {
+            pingScheduledFuture.cancel(true);
+            pingScheduledFuture = null;
+        }
     }
 
     @Override
@@ -66,6 +73,10 @@ public abstract class ByteSocket<H extends HeaderBase>
         if (autoReconnect && autoScheduledFuture != null) {
             autoScheduledFuture.cancel(true);
             autoScheduledFuture = null;
+        }
+        if (pingScheduledFuture != null) {
+            pingScheduledFuture.cancel(true);
+            pingScheduledFuture = null;
         }
     }
 
@@ -77,8 +88,22 @@ public abstract class ByteSocket<H extends HeaderBase>
             autoScheduledFuture.cancel(true);
             autoScheduledFuture = null;
         }
+        if (pingScheduledFuture != null) {
+            pingScheduledFuture.cancel(true);
+            pingScheduledFuture = null;
+        }
 
         scheduledThread.shutdown();
+    }
+
+    @Override
+    public void onDisconnected(long connectorId, ChannelHandlerContext ctx) {
+        super.onDisconnected(connectorId, ctx);
+
+        if (pingScheduledFuture != null) {
+            pingScheduledFuture.cancel(true);
+            pingScheduledFuture = null;
+        }
     }
 
     public boolean isAutoReconnect() {
@@ -87,6 +112,19 @@ public abstract class ByteSocket<H extends HeaderBase>
 
     public long getPing() {
         return pingValue;
+    }
+
+    public void ping() {
+        if (isConnected()) {
+            if (pingScheduledFuture != null) {
+                pingScheduledFuture.cancel(true);
+                pingScheduledFuture = null;
+            }
+            pingScheduledFuture = scheduledThread.scheduleAtFixedRate(new Ping(),
+                    DEFAULT_PING_INTERVAL,
+                    DEFAULT_PING_INTERVAL,
+                    TimeUnit.SECONDS);
+        }
     }
 
     protected void ping(ByteMessage<H> message) {

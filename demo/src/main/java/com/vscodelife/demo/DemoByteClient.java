@@ -10,7 +10,7 @@ public class DemoByteClient {
 
     @SuppressWarnings("static-access")
     public static void main(String[] args) {
-        TestByteClient client = new TestByteClient();
+        TestByteClient client = new TestByteClient("U002", "pass456");
         client.connect("127.0.0.1", 30001);
         logger.info("start byte client start.");
         while (client.isConnecting() || client.isConnected()) {

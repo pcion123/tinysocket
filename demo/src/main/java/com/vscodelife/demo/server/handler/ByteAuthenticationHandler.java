@@ -1,5 +1,8 @@
 package com.vscodelife.demo.server.handler;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -7,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vscodelife.demo.DemoByteServer;
+import com.vscodelife.demo.User;
 import com.vscodelife.demo.server.ByteUserConnection;
 import com.vscodelife.demo.server.ByteUserHeader;
 import com.vscodelife.demo.server.TestByteServer;
@@ -17,7 +22,6 @@ import com.vscodelife.socketio.message.ByteMessage;
 import com.vscodelife.socketio.message.base.ProtocolKey;
 import com.vscodelife.socketio.util.JwtUtil;
 
-import io.jsonwebtoken.Claims;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
@@ -87,18 +91,20 @@ public class ByteAuthenticationHandler extends SimpleChannelInboundHandler<ByteM
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteMessage<ByteUserHeader> message) throws Exception {
+        logger.info("Client {} send request, message={}", ctx.channel().remoteAddress(), message);
         // 取得消息頭
         ByteUserHeader header = message.getHeader();
         // 取得協議鍵
         ProtocolKey protocolKey = header.getProtocolKey();
         // 取得請求編號
         long requestId = header.getRequestId();
+
         // 取得用戶連接
         ByteUserConnection connection = socket.getConnection(ctx.channel());
         if (connection != null) {
             try {
                 // 檢查是否為驗證協議
-                if (ProtocolId.AUTH != protocolKey) {
+                if (!ProtocolId.AUTH.equals(protocolKey)) {
                     // 如果尚未通過驗證，則拒絕該消息處理
                     if (!isAuthenticated(ctx)) {
                         throw new AuthException("invalid protocol");
@@ -146,42 +152,91 @@ public class ByteAuthenticationHandler extends SimpleChannelInboundHandler<ByteM
         // 取得請求內容
         ByteArrayBuffer request = message.getBuffer();
         String userId = request.readString();
-        String token = request.readString();
-        // 驗證用戶
-        if (!validateUser(userId, token)) {
-            throw new AuthException("validate user failed");
+        String password = request.readString();
+
+        // 驗證用戶帳號密碼
+        if (!validateUserCredentials(userId, password)) {
+            throw new AuthException("userId or password is error");
         }
+
+        // 生成 JWT Token（15分鐘有效期）
+        String token = generateAuthToken(userId);
+
         // 標記為已驗證
         setAuthenticated(ctx, true);
         // 取消超時任務
         cancelAuthTimeout(ctx);
         // 從 pipeline 中移除自己，後續消息直接進入正常處理流程
         removeAuthHandler(ctx);
-        // 發送驗證成功消息
+
+        connection.setUserId(userId);
+        connection.setToken(token);
+        connection.setAuthed(true);
+
+        // 發送驗證成功消息，包含生成的 token
         ByteArrayBuffer response = new ByteArrayBuffer();
         response.writeInt(200);
         response.writeString("auth success");
+        response.writeString(token);
         connection.send(ProtocolId.AUTH_RESULT, requestId, response);
+
+        logger.info("用戶 {} 驗證成功，生成 token: {}", userId, token);
     }
 
-    private boolean validateUser(String userId, String token) throws AuthException {
+    /**
+     * 驗證用戶帳號密碼
+     */
+    private boolean validateUserCredentials(String userId, String password) throws AuthException {
+        User user = DemoByteServer.getUser(userId);
+        if (user == null) {
+            throw new AuthException("user is not exist");
+        }
+        return user.getPassword().equals(password);
+    }
+
+    /**
+     * 生成驗證 token（15分鐘有效期）
+     */
+    private String generateAuthToken(String userId) {
         try {
-            // 驗證 JWT Token
-            Claims claims = JwtUtil.parseJws(token);
-            if (claims == null) {
-                throw new AuthException("claims is null");
+            // 創建自定義聲明
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("userId", userId);
+            claims.put("authTime", Instant.now().getEpochSecond());
+            claims.put("tokenType", "auth");
+
+            // 使用自定義方法生成 15 分鐘過期的 token
+            return generateJwsWithMinutes(userId, claims, 3);
+        } catch (Exception e) {
+            logger.error("create jwt token failed", e);
+            // 不拋出 AuthException，而是拋出 RuntimeException
+            throw new RuntimeException("jwt token create failed", e);
+        }
+    }
+
+    /**
+     * 生成指定分鐘數過期的 JWS Token
+     */
+    private String generateJwsWithMinutes(String subject, Map<String, Object> claims, int expirationMinutes) {
+        try {
+            Instant now = Instant.now();
+            Instant expiration = now.plus(expirationMinutes, java.time.temporal.ChronoUnit.MINUTES);
+
+            io.jsonwebtoken.JwtBuilder builder = io.jsonwebtoken.Jwts.builder()
+                    .subject(subject)
+                    .issuedAt(java.util.Date.from(now))
+                    .expiration(java.util.Date.from(expiration))
+                    .signWith(JwtUtil.createKeyFromString("mySecretKeyForJWTTokenGenerationAndValidation12345"));
+
+            if (claims != null && !claims.isEmpty()) {
+                builder.claims(claims);
+                builder.subject(subject); // 重新設置 subject，因為 claims 會覆蓋
             }
-            Object userIdClaim = claims.get("userId");
-            if (userIdClaim == null) {
-                throw new AuthException("userId claim is null");
-            }
-            if (!userId.equals(userIdClaim.toString())) {
-                throw new AuthException("userId mismatch");
-            }
-            return true;
-        } catch (RuntimeException e) {
-            // JWT 解析或驗證失敗
-            throw new AuthException("JWT validation failed: " + e.getMessage());
+
+            return builder.compact();
+        } catch (Exception e) {
+            logger.error("create custom expiration JWS failed", e);
+            throw new RuntimeException("create custom expiration JWS failed", e);
         }
     }
 

@@ -1,15 +1,20 @@
 package com.vscodelife.demo.server.handler;
 
+import java.net.SocketException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vscodelife.demo.server.ByteUserConnection;
 import com.vscodelife.demo.server.ByteUserHeader;
 import com.vscodelife.demo.server.TestByteServer;
 import com.vscodelife.socketio.buffer.ByteArrayBuffer;
 import com.vscodelife.socketio.message.ByteMessage;
 import com.vscodelife.socketio.util.JsonUtil;
+import com.vscodelife.socketio.util.JwtUtil;
 import com.vscodelife.socketio.util.NettyUtil;
 
+import io.jsonwebtoken.Claims;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -25,7 +30,6 @@ public class ByteHeaderDecoderHandler extends LengthFieldBasedFrameDecoder {
     private static final int LENGTH_ADJUSTMENT = -4; // 長度調整：總長度包含自身，所以要減去 4
     private static final int INITIAL_BYTES_TO_STRIP = 4; // 跳過總長度字段
 
-    @SuppressWarnings("unused")
     private final TestByteServer socket;
 
     public ByteHeaderDecoderHandler(TestByteServer socket) {
@@ -56,6 +60,31 @@ public class ByteHeaderDecoderHandler extends LengthFieldBasedFrameDecoder {
                     ctx.channel().id(), e.getMessage(), e);
         } finally {
             ReferenceCountUtil.release(in);
+        }
+
+        // 取得用戶連接
+        ByteUserConnection connection = socket.getConnection(ctx.channel());
+        if (connection != null && connection.isAuthed() && message != null) {
+            ByteUserHeader header = message.getHeader();
+            String token = header.getToken();
+            try {
+                // 驗證 token 是否合法
+                validateUserToken(connection, header, token);
+            } catch (SocketException e) {
+                logger.error("Token validation failed, closing connection: {}", e.getMessage());
+
+                // 發送錯誤結果給客戶端
+                try {
+                    ByteArrayBuffer response = new ByteArrayBuffer();
+                    response.writeInt(401); // Unauthorized
+                    response.writeString(e.getMessage());
+                    connection.send(header.getProtocolKey(), header.getRequestId(), response);
+                } catch (Exception sendException) {
+                    logger.error("Failed to send error response to client: {}", sendException.getMessage());
+                }
+                connection.disconnect();
+                return null; // 連接已斷開，不需要繼續傳遞消息
+            }
         }
         return message;
     }
@@ -131,6 +160,46 @@ public class ByteHeaderDecoderHandler extends LengthFieldBasedFrameDecoder {
         } catch (Exception e) {
             logger.error("Error reading body bytes: {}", e.getMessage(), e);
             return null;
+        }
+    }
+
+    /**
+     * 驗證用戶 token 是否合法
+     * 
+     * @param connection 用戶連接
+     * @param header     消息頭
+     * @param token      JWT token
+     * @throws SocketException 當 token 驗證失敗時拋出
+     */
+    private void validateUserToken(ByteUserConnection connection, ByteUserHeader header, String token)
+            throws SocketException {
+        if (token == null || token.trim().isEmpty()) {
+            logger.warn("Empty or null token for user: {}", header.getUserId());
+            throw new SocketException("Token is empty or null for user: " + header.getUserId());
+        }
+
+        try {
+            // 使用與 ByteAuthenticationHandler 相同的密鑰驗證 token
+            javax.crypto.SecretKey signingKey = JwtUtil
+                    .createKeyFromString("mySecretKeyForJWTTokenGenerationAndValidation12345");
+            Claims claims = JwtUtil.parseJws(token, signingKey);
+            String tokenUserId = claims.getSubject();
+
+            // 檢查 token 中的 userId 是否與 header 中的 userId 一致
+            if (tokenUserId != null && tokenUserId.equals(header.getUserId())) {
+                logger.debug("Token validation successful for user: {}", tokenUserId);
+            } else {
+                logger.warn("Token validation failed: userId mismatch. Token userId: {}, Header userId: {}",
+                        tokenUserId, header.getUserId());
+                throw new SocketException("Token validation failed: userId mismatch for user: " + header.getUserId());
+            }
+        } catch (SocketException e) {
+            // 重新拋出 SocketException
+            throw e;
+        } catch (Exception e) {
+            logger.error("Token validation failed for user {}: {}", header.getUserId(), e.getMessage());
+            throw new SocketException(
+                    "Token validation failed for user: " + header.getUserId() + ", reason: " + e.getMessage());
         }
     }
 
