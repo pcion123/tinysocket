@@ -40,8 +40,8 @@ public abstract class JsonSocket<H extends HeaderBase> extends SocketBase<H, Jso
             Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) {
         super(logger, initializerClazz);
 
-        registerProtocol(ProtocolId.PING, catchException(message -> ping(message)));
-        registerProtocol(ProtocolId.DISCONNECT, catchException(message -> disconnected(message)));
+        protocolRegister.registerProtocol(ProtocolId.PING, catchException(message -> ping(message)));
+        protocolRegister.registerProtocol(ProtocolId.DISCONNECT, catchException(message -> disconnected(message)));
     }
 
     @Override

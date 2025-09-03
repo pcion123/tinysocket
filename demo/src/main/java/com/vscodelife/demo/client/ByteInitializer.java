@@ -31,6 +31,6 @@ public class ByteInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast("decoder", new ByteHeaderDecoderHandler(connector));
         pipeline.addLast("message", new ByteMessageHandler(connector));
         pipeline.addLast("connect", new ByteConnectHandler(connector));
-        logger.info("client {} is connected", channel.remoteAddress());
+        logger.debug("client {} is connected", channel.remoteAddress());
     }
 }

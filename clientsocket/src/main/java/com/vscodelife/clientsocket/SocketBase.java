@@ -1,8 +1,6 @@
 package com.vscodelife.clientsocket;
 
-import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,6 +9,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 
 import com.vscodelife.clientsocket.component.ProtocolCatcher;
+import com.vscodelife.clientsocket.component.ProtocolRegister;
 import com.vscodelife.socketio.message.base.HeaderBase;
 import com.vscodelife.socketio.message.base.MessageBase;
 import com.vscodelife.socketio.message.base.ProtocolKey;
@@ -35,7 +34,7 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
     protected final AtomicBoolean running = new AtomicBoolean(true);
 
     protected final Queue<M> messageQueue = new LinkedBlockingQueue<>();
-    protected final Map<ProtocolKey, Consumer<M>> processMap = new ConcurrentHashMap<>();
+    protected final ProtocolRegister<H, M, B> protocolRegister;
 
     protected Connector<H, M, B> connector;
 
@@ -45,6 +44,10 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
             Class<? extends ChannelInitializer<SocketChannel>> initializerClazz) {
         this.logger = logger;
         this.initializerClazz = initializerClazz;
+
+        // 初始化協議註冊器
+        this.protocolRegister = new ProtocolRegister<H, M, B>(
+                handler -> catchException(message -> handler.accept(message)));
     }
 
     public abstract String getVersion();
@@ -154,22 +157,22 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
 
     @Override
     public void onConnected(long connectorId, ChannelHandlerContext ctx) {
-        logger.info("connector={} connect to server", connectorId);
+        logger.debug("connector={} connect to server", connectorId);
     }
 
     @Override
     public void onDisconnected(long connectorId, ChannelHandlerContext ctx) {
-        logger.info("connector={} disconnect from server", connectorId);
+        logger.debug("connector={} disconnect from server", connectorId);
     }
 
     @Override
     public void onSendMessage(long connectorId, ChannelHandlerContext ctx, M message) {
-        logger.info("connector={} send message: {}", connectorId, message);
+        logger.debug("connector={} send message: {}", connectorId, message);
     }
 
     @Override
     public void onReceiveMessage(long connectorId, ChannelHandlerContext ctx, M message) {
-        logger.info("connector={} receive message: {}", connectorId, message);
+        logger.debug("connector={} receive message: {}", connectorId, message);
 
         putMessage(message);
     }
@@ -185,15 +188,6 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
 
     public long genRequestId() {
         return nextId();
-    }
-
-    protected void registerProtocol(int mainNo, int subNo, Consumer<M> handler) {
-        registerProtocol(new ProtocolKey(mainNo, subNo), handler);
-    }
-
-    protected void registerProtocol(ProtocolKey key, Consumer<M> handler) {
-        processMap.put(key, handler);
-        logger.debug("Registered protocol {}-{}", key.getMainNo(), key.getSubNo());
     }
 
     @Override
@@ -258,8 +252,10 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
         int mainNo = header.getMainNo();
         int subNo = header.getSubNo();
         ProtocolKey key = header.getProtocolKey();
-        //
-        Consumer<M> processor = processMap.get(key);
+
+        // 從 protocolRegister 獲取協議處理器
+        Consumer<M> processor = protocolRegister.getProtocolHandler(key);
+
         if (processor != null) {
             String profilerName = "socket-dispatcher";
             String executeName = ProfilerUtil.executeStart(profilerName);
@@ -270,7 +266,7 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
                         sessionId, requestId, mainNo, subNo, e.getMessage()), e);
             } finally {
                 if (ProfilerUtil.executeEnd(profilerName, executeName, 1000, true)) {
-                    logger.info("handle serversocket dispatcher protocol-{}-{} too long", mainNo, subNo);
+                    logger.info("handle clientsocket dispatcher protocol-{}-{} too long", mainNo, subNo);
                 }
             }
         } else {
@@ -307,19 +303,19 @@ public abstract class SocketBase<H extends HeaderBase, M extends MessageBase<H, 
 
     protected abstract M pack(String version, int mainNo, int subNo, long sessionId, long requestId, B buffer);
 
-    protected void send(ProtocolKey protocol, B buffer) {
+    public void send(ProtocolKey protocol, B buffer) {
         send(protocol.getMainNo(), protocol.getSubNo(), genRequestId(), buffer);
     }
 
-    protected void send(ProtocolKey protocol, long requestId, B buffer) {
+    public void send(ProtocolKey protocol, long requestId, B buffer) {
         send(protocol.getMainNo(), protocol.getSubNo(), requestId, buffer);
     }
 
-    protected void send(int mainNo, int subNo, B buffer) {
+    public void send(int mainNo, int subNo, B buffer) {
         send(mainNo, subNo, genRequestId(), buffer);
     }
 
-    protected void send(int mainNo, int subNo, long requestId, B buffer) {
+    public void send(int mainNo, int subNo, long requestId, B buffer) {
         String version = getVersion();
         try {
             if (connector != null && connector.isConnected()) {

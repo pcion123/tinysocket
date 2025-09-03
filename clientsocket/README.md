@@ -1418,7 +1418,7 @@ public class ResourceManagementBestPractices {
 *讓 Socket 客戶端開發變得簡單而可靠*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月1日  
+> **最後更新**: 2025年9月4日  
 > **Java版本**: OpenJDK 21+  
 > **技術棧**: Netty 4.1.115 + SocketIO Core
 

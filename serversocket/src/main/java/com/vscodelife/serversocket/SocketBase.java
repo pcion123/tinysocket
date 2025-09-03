@@ -535,7 +535,38 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         };
     }
 
-    protected void broadcast(int mainNo, int subNo, B buffer) {
+    public void broadcast(ProtocolKey protocol, B buffer) {
+        IConnection<B>[] connections = getConnections();
+        if (connections != null) {
+            for (IConnection<B> connection : connections) {
+                connection.send(protocol, buffer);
+            }
+        }
+    }
+
+    public void send(long sessionId, ProtocolKey protocol, B buffer) {
+        send(sessionId, protocol, 0, buffer);
+    }
+
+    public void send(long sessionId, ProtocolKey protocol, long requestId, B buffer) {
+        IConnection<B> connection = getConnection(sessionId);
+        if (connection != null) {
+            connection.send(protocol, requestId, buffer);
+        }
+    }
+
+    public void send(Channel channel, ProtocolKey protocol, B buffer) {
+        send(channel, protocol, 0, buffer);
+    }
+
+    public void send(Channel channel, ProtocolKey protocol, long requestId, B buffer) {
+        IConnection<B> connection = getConnection(channel);
+        if (connection != null) {
+            connection.send(protocol, requestId, buffer);
+        }
+    }
+
+    public void broadcast(int mainNo, int subNo, B buffer) {
         IConnection<B>[] connections = getConnections();
         if (connections != null) {
             for (IConnection<B> connection : connections) {
@@ -544,22 +575,22 @@ public abstract class SocketBase<H extends HeaderBase, C extends IConnection<B>,
         }
     }
 
-    protected void send(long sessionId, int mainNo, int subNo, B buffer) {
+    public void send(long sessionId, int mainNo, int subNo, B buffer) {
         send(sessionId, mainNo, subNo, 0, buffer);
     }
 
-    protected void send(long sessionId, int mainNo, int subNo, long requestId, B buffer) {
+    public void send(long sessionId, int mainNo, int subNo, long requestId, B buffer) {
         IConnection<B> connection = getConnection(sessionId);
         if (connection != null) {
             connection.send(mainNo, subNo, requestId, buffer);
         }
     }
 
-    protected void send(Channel channel, int mainNo, int subNo, B buffer) {
+    public void send(Channel channel, int mainNo, int subNo, B buffer) {
         send(channel, mainNo, subNo, 0, buffer);
     }
 
-    protected void send(Channel channel, int mainNo, int subNo, long requestId, B buffer) {
+    public void send(Channel channel, int mainNo, int subNo, long requestId, B buffer) {
         IConnection<B> connection = getConnection(channel);
         if (connection != null) {
             connection.send(mainNo, subNo, requestId, buffer);

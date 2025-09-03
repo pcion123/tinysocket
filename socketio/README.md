@@ -49,23 +49,24 @@ socketio/
 │   ├── ByteCache.java            # 二進制訊息快取
 │   └── JsonCache.java            # JSON 訊息快取
 └── util/                         # 工具類集合
-    ├── profiler/                 # 性能分析工具
-    │   ├── ProfilerUtil.java     # 性能監測主工具
-    │   ├── ProfilerCounter.java  # 性能計數器
-    │   ├── ProfilerCounterManager.java # 計數器管理器
-    │   └── ProfilerConfig.java   # 分析器配置
-    ├── http/                     # HTTP 工具
-    │   ├── HttpUtil.java         # HTTP 客戶端工具
-    │   └── HttpResponse.java     # HTTP 回應封裝
-    ├── JsonUtil.java             # FastJSON 2.x 高性能 JSON 處理
-    ├── DateUtil.java             # Joda-Time 日期時間處理
-    ├── SnowflakeUtil.java        # 分散式唯一 ID 生成器
     ├── Base64Util.java           # Base64 編解碼工具
-    ├── StrUtil.java              # 字串處理增強工具
+    ├── DateUtil.java             # 日期時間處理工具
     ├── ExecutorUtil.java         # 線程池管理工具
-    ├── NettyUtil.java            # Netty 工具類
-    ├── RandomUtil.java           # 隨機數工具
-    └── JwtUtil.java              # JWT 令牌處理工具
+    ├── JsonUtil.java             # JSON 處理工具（FastJSON2）
+    ├── JwtUtil.java              # JWT Token 處理工具
+    ├── NettyUtil.java            # Netty 相關工具
+    ├── ProtocolScannerUtil.java  # 協議掃描工具
+    ├── RandomUtil.java           # 隨機數生成工具
+    ├── SnowflakeUtil.java        # 分散式ID生成器
+    ├── StrUtil.java              # 字串處理工具
+    ├── http/                     # HTTP 相關工具
+    │   ├── HttpUtil.java             # HTTP 客戶端工具
+    │   └── HttpResponse.java         # HTTP 響應封裝
+    └── profiler/                 # 性能分析工具
+        ├── ProfilerUtil.java         # 性能分析工具主類
+        ├── ProfilerCounter.java      # 性能計數器
+        ├── ProfilerConfig.java       # 性能分析配置
+        └── ProfilerCounterManager.java # 計數器管理器
 ```
 
 ### 設計模式與架構理念

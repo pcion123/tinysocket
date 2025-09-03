@@ -49,6 +49,29 @@ serversocket/
 │   │   ├── 快取管理: JsonCache
 │   │   └── 初始化器: JsonInitializer
 │   ├── component/                     # 組件系統
+│   │   ├── RateLimiter.java               # 限流器組件
+│   │   │   ├── 令牌桶算法限流
+│   │   │   ├── 可配置限流策略
+│   │   │   └── 過載保護機制
+│   │   ├── ProtocolCatcher.java           # 協議異常捕獲器
+│   │   │   ├── 異常處理包裝
+│   │   │   ├── 錯誤日誌記錄
+│   │   │   └── 優雅降級處理
+│   │   └── ProtocolRegister.java          # 協議註冊器
+│   │       ├── 自動協議掃描
+│   │       ├── @ProtocolTag 註解處理
+│   │       └── 協議方法映射
+│   └── connection/                    # 連接管理實現
+│       ├── ByteConnection.java            # 二進制連接實現
+│       │   ├── 實現: IConnection<ByteArrayBuffer>
+│       │   ├── 二進制數據處理
+│       │   ├── 壓縮傳輸支援
+│       │   └── 會話狀態管理
+│       └── JsonConnection.java            # JSON 連接實現
+│           ├── 實現: IConnection<String>
+│           ├── JSON 自動序列化
+│           ├── 結構化數據處理
+│           └── 調試友好輸出
 │   │   ├── RateLimiter.java           # 限流器組件
 │   │   │   ├── 令牌桶算法
 │   │   │   ├── 滑動窗口限流
@@ -1194,7 +1217,7 @@ public void broadcastToRoom(String roomId, ByteArrayBuffer message) {
 *讓高性能 Socket 服務器開發變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月1日  
+> **最後更新**: 2025年9月4日  
 > **Java版本**: OpenJDK 21+  
 > **技術棧**: Netty 4.1.115 + Spring Boot 3.5.4 + FastJSON 2.0.52
 

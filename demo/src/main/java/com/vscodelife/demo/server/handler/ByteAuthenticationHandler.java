@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vscodelife.demo.DemoByteServer;
-import com.vscodelife.demo.User;
+import com.vscodelife.demo.entity.User;
 import com.vscodelife.demo.server.ByteUserConnection;
 import com.vscodelife.demo.server.ByteUserHeader;
 import com.vscodelife.demo.server.TestByteServer;
+import com.vscodelife.demo.server.component.UserManager;
 import com.vscodelife.demo.server.exception.AuthException;
 import com.vscodelife.socketio.buffer.ByteArrayBuffer;
 import com.vscodelife.socketio.constant.ProtocolId;
@@ -187,7 +187,7 @@ public class ByteAuthenticationHandler extends SimpleChannelInboundHandler<ByteM
      * 驗證用戶帳號密碼
      */
     private boolean validateUserCredentials(String userId, String password) throws AuthException {
-        User user = DemoByteServer.getUser(userId);
+        User user = UserManager.getInstance().getUser(userId);
         if (user == null) {
             throw new AuthException("user is not exist");
         }

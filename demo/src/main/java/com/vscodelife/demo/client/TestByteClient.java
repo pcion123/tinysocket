@@ -29,8 +29,10 @@ public class TestByteClient extends ByteSocket<ByteUserHeader> {
 
         ByteProtocol.client = this;
 
-        registerProtocol(ProtocolId.AUTH_RESULT, catchException(message -> ByteProtocol.rcvAuthResult(message)));
-        registerProtocol(ProtocolId.NOTIFY_SESSION_ID, catchException(message -> ByteProtocol.rcvSessionId(message)));
+        // 使用註解自動註冊協議處理器
+        int protocolCount = protocolRegister.scanAndRegisterProtocols(ByteProtocol.class);
+
+        logger.info("reg protocol count={}", protocolCount);
     }
 
     @Override
@@ -41,6 +43,13 @@ public class TestByteClient extends ByteSocket<ByteUserHeader> {
     @Override
     public Class<TestByteClient> getSocketClazz() {
         return TestByteClient.class;
+    }
+
+    @Override
+    public void disconnect() {
+        send(com.vscodelife.demo.constant.ProtocolId.OFFLINE, new ByteArrayBuffer());
+
+        super.disconnect();
     }
 
     @Override

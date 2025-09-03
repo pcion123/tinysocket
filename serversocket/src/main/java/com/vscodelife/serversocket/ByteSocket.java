@@ -91,8 +91,29 @@ public abstract class ByteSocket<H extends HeaderBase, C extends IConnection<Byt
     @Override
     public void close() {
         running.set(false);
+
+        // 優雅地關閉執行緒池並等待完成
         mainThread.shutdown();
         scheduledThread.shutdown();
+
+        try {
+            // 等待主執行緒完成清理
+            if (!mainThread.awaitTermination(3, TimeUnit.SECONDS)) {
+                logger.warn("Main thread did not terminate gracefully, forcing shutdown");
+                mainThread.shutdownNow();
+            }
+
+            // 等待排程執行緒完成清理
+            if (!scheduledThread.awaitTermination(3, TimeUnit.SECONDS)) {
+                logger.warn("Scheduled thread did not terminate gracefully, forcing shutdown");
+                scheduledThread.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for threads to terminate");
+            mainThread.shutdownNow();
+            scheduledThread.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     protected void updateConnections() {

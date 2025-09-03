@@ -31,22 +31,35 @@ demo/
 │   │   ├── java/com/vscodelife/demo/
 │   │   │   ├── DemoByteServer.java          # 服務器啟動類
 │   │   │   ├── DemoByteClient.java          # 客戶端啟動類
-│   │   │   ├── User.java                    # 用戶實體類
+│   │   │   ├── constant/                    # 協議常量定義
+│   │   │   │   └── ProtocolId.java              # 協議ID常量
+│   │   │   ├── entity/                      # 實體類
+│   │   │   │   ├── User.java                    # 用戶實體類
+│   │   │   │   └── ChatMessage.java             # 聊天訊息實體
 │   │   │   ├── server/                      # 服務器端實現
 │   │   │   │   ├── TestByteServer.java          # 測試服務器
 │   │   │   │   ├── ByteUserHeader.java          # 自定義 Header
 │   │   │   │   ├── ByteUserConnection.java      # 自定義 Connection
 │   │   │   │   ├── ByteInitializer.java         # Netty 初始化器
-│   │   │   │   └── ByteProtocol.java            # 協議處理器（註解驅動）
+│   │   │   │   ├── ByteProtocol.java            # 協議處理器（註解驅動）
+│   │   │   │   ├── component/                   # 服務器組件
+│   │   │   │   │   ├── UserManager.java             # 用戶管理器
+│   │   │   │   │   └── ChatManager.java             # 聊天管理器
+│   │   │   │   ├── exception/                   # 異常處理
+│   │   │   │   └── handler/                     # 服務器處理器
+│   │   │   │       └── ByteMessageHandler.java      # 訊息處理器
 │   │   │   └── client/                      # 客戶端實現
 │   │   │       ├── TestByteClient.java          # 測試客戶端
 │   │   │       ├── ByteUserHeader.java          # 客戶端 Header
 │   │   │       ├── ByteInitializer.java         # 客戶端初始化器
 │   │   │       ├── ByteProtocol.java            # 客戶端協議處理
-│   │   │       └── handler/                 # 客戶端處理器
-│   │   │           ├── ByteConnectHandler.java
-│   │   │           ├── ByteHeaderDecoderHandler.java
-│   │   │           └── ByteHeaderEncoderHandler.java
+│   │   │       ├── component/                   # 客戶端組件
+│   │   │       │   └── CommandManager.java          # 命令管理器
+│   │   │       └── handler/                     # 客戶端處理器
+│   │   │           ├── ByteConnectHandler.java      # 連接處理器
+│   │   │           ├── ByteMessageHandler.java      # 訊息處理器
+│   │   │           ├── ByteHeaderDecoderHandler.java # Header解碼器
+│   │   │           └── ByteHeaderEncoderHandler.java # Header編碼器
 │   │   └── resources/
 │   │       └── application.yml              # Spring Boot 配置
 │   └── test/
@@ -1325,7 +1338,7 @@ public static void handleGameData(ByteMessage<ByteUserHeader> message) {
 *TinySocket Demo - 學習 TinySocket 框架的最佳起點！*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月1日  
+> **最後更新**: 2025年9月4日  
 > **Java版本**: OpenJDK 21+  
 > **示例類型**: 完整的客戶端-服務器通信演示
 

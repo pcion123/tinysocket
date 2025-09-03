@@ -653,7 +653,7 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 *讓網絡通信變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年8月31日  
+> **最後更新**: 2025年9月4日  
 > **Java版本**: OpenJDK 21+  
 > **Spring Boot版本**: 3.5.4
 > **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅

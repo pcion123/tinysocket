@@ -1,4 +1,4 @@
-package com.vscodelife.serversocket.component;
+package com.vscodelife.clientsocket.component;
 
 import java.util.List;
 import java.util.Map;
@@ -8,8 +8,6 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vscodelife.socketio.connection.IConnection;
-import com.vscodelife.socketio.message.base.CacheBase;
 import com.vscodelife.socketio.message.base.HeaderBase;
 import com.vscodelife.socketio.message.base.MessageBase;
 import com.vscodelife.socketio.message.base.ProtocolKey;
@@ -17,29 +15,19 @@ import com.vscodelife.socketio.message.base.ProtocolReg;
 import com.vscodelife.socketio.util.ProtocolScannerUtil;
 
 /**
- * 協議註冊和處理工具類
+ * 客戶端協議註冊和處理工具類
  * 負責掃描帶有 @ProtocolTag 註解的方法，創建方法處理器，並管理協議註冊
  * 
  * @param <H> Header 型別，必須繼承 HeaderBase
- * @param <C> Connection 型別，必須實現 IConnection
  * @param <M> Message 型別，必須繼承 MessageBase
  * @param <B> Buffer 型別，用於數據傳輸
  */
-public class ProtocolRegister<H extends HeaderBase, C extends IConnection<B>, M extends MessageBase<H, B>, B> {
+public class ProtocolRegister<H extends HeaderBase, M extends MessageBase<H, B>, B> {
 
     private static final Logger logger = LoggerFactory.getLogger(ProtocolRegister.class);
 
     private final Map<ProtocolKey, Consumer<M>> processMap = new ConcurrentHashMap<>();
-    private final CacheBase<M, B> cacheManager;
     private final ProtocolScannerUtil.ScanConfig<M> scanConfig;
-
-    /**
-     * 連接提供者接口
-     */
-    @FunctionalInterface
-    public interface ConnectionProvider<H extends HeaderBase, C extends IConnection<B>, B> {
-        C getConnection(long sessionId);
-    }
 
     /**
      * 異常處理器接口
@@ -52,20 +40,14 @@ public class ProtocolRegister<H extends HeaderBase, C extends IConnection<B>, M 
     /**
      * 構造函數
      * 
-     * @param cacheManager       快取管理器
-     * @param connectionProvider 連接提供者
-     * @param exceptionHandler   異常處理器
+     * @param exceptionHandler 異常處理器
      */
-    public ProtocolRegister(CacheBase<M, B> cacheManager,
-            ConnectionProvider<H, C, B> connectionProvider,
-            ExceptionHandler<M> exceptionHandler) {
-        this.cacheManager = cacheManager;
-
-        // 建立掃描配置
-        this.scanConfig = ProtocolScannerUtil.createServerScanConfig(
-                sessionId -> connectionProvider != null ? connectionProvider.getConnection(sessionId) : null,
+    public ProtocolRegister(ExceptionHandler<M> exceptionHandler) {
+        this.scanConfig = new ProtocolScannerUtil.ScanConfig<>(
+                ProtocolScannerUtil.createClientArgumentPreparer(),
                 exceptionHandler != null ? exceptionHandler::catchException : null,
-                cacheManager != null // 根據是否有快取管理器決定是否支援快取
+                false, // 客戶端不支援緩存
+                true // 預設啟用異常處理
         );
     }
 
@@ -102,7 +84,7 @@ public class ProtocolRegister<H extends HeaderBase, C extends IConnection<B>, M 
 
         for (ProtocolReg<M> protocol : protocols) {
             try {
-                registerProtocol(protocol.getKey(), protocol.getHandler(), protocol.isCached());
+                registerProtocol(protocol.getKey(), protocol.getHandler());
                 registeredCount++;
             } catch (Exception e) {
                 logger.error("Failed to register protocol {}: {}", protocol.getKey(), e.getMessage(), e);
@@ -121,22 +103,11 @@ public class ProtocolRegister<H extends HeaderBase, C extends IConnection<B>, M 
      * @param handler 處理器
      */
     public void registerProtocol(int mainNo, int subNo, Consumer<M> handler) {
-        registerProtocol(new ProtocolKey(mainNo, subNo), handler, false);
-    }
-
-    public void registerProtocol(int mainNo, int subNo, Consumer<M> handler, boolean cached) {
-        registerProtocol(new ProtocolKey(mainNo, subNo), handler, cached);
+        registerProtocol(new ProtocolKey(mainNo, subNo), handler);
     }
 
     public void registerProtocol(ProtocolKey key, Consumer<M> handler) {
-        registerProtocol(key, handler, false);
-    }
-
-    public void registerProtocol(ProtocolKey key, Consumer<M> handler, boolean cached) {
         processMap.put(key, handler);
-        if (cached && cacheManager != null) {
-            cacheManager.registerProtocolKey(key);
-        }
         logger.debug("Registered protocol {}-{}", key.getMainNo(), key.getSubNo());
     }
 
@@ -183,5 +154,4 @@ public class ProtocolRegister<H extends HeaderBase, C extends IConnection<B>, M 
     public java.util.Set<ProtocolKey> getAllProtocolKeys() {
         return processMap.keySet();
     }
-
 }

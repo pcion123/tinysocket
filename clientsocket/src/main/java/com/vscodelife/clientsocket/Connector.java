@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -104,7 +105,7 @@ public class Connector<H extends HeaderBase, M extends MessageBase<H, B>, B> imp
             bootStrap = new Bootstrap();
             bootStrap.group(bossGroup).channel(NioSocketChannel.class).handler(handler);
 
-            logger.info("connector is open");
+            logger.debug("connector is open");
 
             ChannelFuture f = bootStrap.connect(hostname, port).sync();
             channel = f.channel();
@@ -114,11 +115,11 @@ public class Connector<H extends HeaderBase, M extends MessageBase<H, B>, B> imp
             }
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            logger.warn("Connector thread was interrupted: {}", e.getMessage());
+            logger.warn("connector thread was interrupted: {}", e.getMessage());
             Thread.currentThread().interrupt(); // 恢復中斷狀態
             connecting.set(false);
         } catch (Exception e) {
-            logger.error("Connector error: {}", e.getMessage(), e);
+            logger.error("connector error: {}", e.getMessage(), e);
             onException(null, e);
             connecting.set(false);
         } finally {
@@ -138,7 +139,7 @@ public class Connector<H extends HeaderBase, M extends MessageBase<H, B>, B> imp
                 bossGroup.shutdownGracefully();
                 bossGroup = null;
             }
-            logger.info("connector is close");
+            logger.debug("connector is close");
         }
     }
 
@@ -155,7 +156,19 @@ public class Connector<H extends HeaderBase, M extends MessageBase<H, B>, B> imp
     public void close() {
         running.set(false);
 
+        // 優雅地關閉線程池並等待完成
         MAIN_THREAD.shutdown();
+        try {
+            // 等待最多 3 秒讓線程完成清理
+            if (!MAIN_THREAD.awaitTermination(3, TimeUnit.SECONDS)) {
+                logger.warn("Connector thread did not terminate gracefully, forcing shutdown");
+                MAIN_THREAD.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for connector thread to terminate");
+            MAIN_THREAD.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public boolean isRunning() {
