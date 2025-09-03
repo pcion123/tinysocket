@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .box { fill: #f0f8ff; stroke: #4a90e2; stroke-width: 2; }
+      .inner-box { fill: #e6f3ff; stroke: #2c5aa0; stroke-width: 1.5; }
+      .text { font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; font-size: 12px; text-anchor: middle; }
+      .title-text { font-size: 14px; font-weight: bold; }
+      .small-text { font-size: 10px; }
+      .arrow { stroke: #4a90e2; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .protocol-text { font-size: 11px; fill: #666; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4a90e2" />
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="300" fill="#fafafa" stroke="#ddd" stroke-width="1"/>
+  
+  <!-- Client Side -->
+  <g id="client">
+    <!-- Main Client Box -->
+    <rect x="30" y="40" width="200" height="220" class="box" rx="8"/>
+    <text x="130" y="30" class="title-text text">DemoClient</text>
+    
+    <!-- ByteSocket Client -->
+    <rect x="50" y="70" width="160" height="60" class="inner-box" rx="4"/>
+    <text x="130" y="92" class="text">ByteSocket</text>
+    <text x="130" y="110" class="small-text">(客戶端)</text>
+    
+    <!-- Auto Reconnect & Heartbeat -->
+    <rect x="50" y="150" width="160" height="60" class="inner-box" rx="4"/>
+    <text x="130" y="172" class="text">自動重連</text>
+    <text x="130" y="190" class="text">心跳保持</text>
+  </g>
+  
+  <!-- Server Side -->
+  <g id="server">
+    <!-- Main Server Box -->
+    <rect x="370" y="40" width="200" height="220" class="box" rx="8"/>
+    <text x="470" y="30" class="title-text text">DemoServer</text>
+    
+    <!-- ByteSocket Server -->
+    <rect x="390" y="70" width="160" height="60" class="inner-box" rx="4"/>
+    <text x="470" y="92" class="text">ByteSocket</text>
+    <text x="470" y="110" class="small-text">(服務器端)</text>
+    
+    <!-- Connection Management & Rate Limiting -->
+    <rect x="390" y="150" width="160" height="60" class="inner-box" rx="4"/>
+    <text x="470" y="172" class="text">連接管理</text>
+    <text x="470" y="190" class="text">限流保護</text>
+  </g>
+  
+  <!-- Communication Arrows -->
+  <g id="communication">
+    <!-- Left to Right Arrow -->
+    <line x1="230" y1="130" x2="330" y2="130" class="arrow"/>
+    <!-- Right to Left Arrow -->
+    <line x1="340" y1="170" x2="240" y2="170" class="arrow"/>
+    
+    <!-- Communication Labels -->
+    <text x="300" y="115" class="protocol-text text">網絡通信</text>
+    <text x="300" y="190" class="protocol-text text">二進制協議</text>
+  </g>
+  
+  <!-- Title -->
+  <text x="300" y="280" class="title-text text" style="font-size: 16px;">Demo 模組架構設計</text>
+</svg>

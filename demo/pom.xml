@@ -10,10 +10,9 @@
         <relativePath>../pom/pom.xml</relativePath>
     </parent>
     
-    <artifactId>serversocket</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>serversocket</name>
-    <description>Server Socket module for tinysocket project</description>
+    <artifactId>demo</artifactId>
+    <name>demo</name>
+    <description>Demo module for examples and testing</description>
     
     <dependencies>
         <!-- Spring Boot Starter -->
@@ -21,19 +20,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-
-        <!-- Netty Core Dependencies -->
+        
+        <!-- Spring Boot Starter Web -->
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        
         <!-- JSON Processing -->
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
         </dependency>
-
+        
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -41,15 +40,19 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Joda Time -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.vscodelife</groupId>
             <artifactId>socketio</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vscodelife</groupId>
+            <artifactId>serversocket</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vscodelife</groupId>
+            <artifactId>clientsocket</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         
@@ -67,6 +70,30 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Socket.IO 模組依賴 -->
+        <dependency>
+            <groupId>com.vscodelife</groupId>
+            <artifactId>socketio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- JLine for enhanced command line interface -->
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-terminal</artifactId>
+            <version>3.24.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-reader</artifactId>
+            <version>3.24.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-builtins</artifactId>
+            <version>3.24.1</version>
+        </dependency>
     </dependencies>
     
     <build>
@@ -74,24 +101,8 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-
+    
 </project>
