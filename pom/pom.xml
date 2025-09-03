@@ -1,177 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.vscodelife</groupId>
+    <artifactId>tinysocket-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    
+    <name>tinysocket-parent</name>
+    <description>Parent project for tinysocket multi-module Maven project</description>
+    
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <spring.boot.version>3.5.4</spring.boot.version>
+        <vscodelife.socketio.version>0.0.1-SNAPSHOT</vscodelife.socketio.version>
+        <vscodelife.serversocket.version>0.0.1-SNAPSHOT</vscodelife.serversocket.version>
+        <vscodelife.clientsocket.version>0.0.1-SNAPSHOT</vscodelife.clientsocket.version>
+        <fastjson.version>2.0.52</fastjson.version>
+        <joda.time.version>2.12.7</joda.time.version>
+        <lombok.version>1.18.30</lombok.version>
+        <netty.version>4.1.115.Final</netty.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    
+    <modules>
+        <module>../socketio</module>
+        <module>../serversocket</module>
+        <module>../clientsocket</module>
+        <module>../demo</module>        
+        <!-- 以下模組將在創建後啟用 -->        
+        <!-- <module>../websocket</module> -->
+        <!-- <module>../webserver</module> -->
+    </modules>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>socketio</artifactId>
+                <version>${vscodelife.socketio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>serversocket</artifactId>
+                <version>${vscodelife.serversocket.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vscodelife</groupId>
+                <artifactId>clientsocket</artifactId>
+                <version>${vscodelife.clientsocket.version}</version>
+            </dependency>
 
-  <groupId>com.tiny.socket</groupId>
-  <artifactId>pom</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda.time.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                    <configuration>
+                        <argLine>-Dfile.encoding=UTF-8</argLine>
+                        <systemPropertyVariables>
+                            <file.encoding>UTF-8</file.encoding>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
-  <name>pom</name>
-  <url>http://maven.apache.org</url>
-
-  <properties>
-    <jdk.version>1.8</jdk.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <argLine>-Dfile.encoding=UTF-8</argLine>
-
-    <socketio.version>0.0.1-SNAPSHOT</socketio.version>
-    <serversocket.version>0.0.1-SNAPSHOT</serversocket.version>
-    <clientsocket.version>0.0.1-SNAPSHOT</clientsocket.version>
-    <websocket.version>0.0.1-SNAPSHOT</websocket.version>
-    <webserver.version>0.0.1-SNAPSHOT</webserver.version>
-  </properties>
-  
-  <modules>
-    <module>../socketio</module>
-    <module>../serversocket</module>
-    <module>../clientsocket</module>
-    <module>../websocket</module>
-    <module>../webserver</module>
-  </modules>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.tiny.socket</groupId>
-        <artifactId>socketio</artifactId>
-        <version>${socketio.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.tiny.socket</groupId>
-        <artifactId>serversocket</artifactId>
-        <version>${serversocket.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.tiny.socket</groupId>
-        <artifactId>clientsocket</artifactId>
-        <version>${clientsocket.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.tiny.socket</groupId>
-        <artifactId>websocket</artifactId>
-        <version>${websocket.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.tiny.socket</groupId>
-        <artifactId>webserver</artifactId>
-        <version>${webserver.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.13.1</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-        <version>1.2.3</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>1.2.3</version>
-      </dependency>
-
-      <!-- druid -->
-      <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>druid</artifactId>
-        <version>1.1.21</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>fastjson</artifactId>
-        <version>1.2.67</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-core</artifactId>
-        <version>2.10.3</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.10.3</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.12</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>4.4.13</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>2.6</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
-        <version>4.1.48.Final</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>2.3</version>
-          <configuration>
-            <archive>
-              <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
-              <manifest>
-                <addClasspath>true</addClasspath>
-              </manifest>
-            </archive>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-source-plugin</artifactId>
-          <version>2.1</version>
-          <configuration>
-            <attach>true</attach>
-          </configuration>
-          <executions>
-            <execution>
-              <id>attach-sources</id>
-              <phase>package</phase>
-              <goals>
-                <goal>jar-no-fork</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>
