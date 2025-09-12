@@ -1164,7 +1164,7 @@ mvn exec:java -Dexec.mainClass="com.vscodelife.demo.DemoByteClient" -Dexec.args=
 
 ### 方式二：Web 聊天系統演示
 
-![TinySocket 聊天室演示](assets/chatdemo.gif)
+<img src="assets/chatdemo.gif" alt="TinySocket 聊天室演示" width="50%" />
 
 **🎬 演示說明**：上面的 GIF 展示了 TinySocket Web 聊天室的完整功能，包括：
 - 💬 **實時聊天**: 多用戶即時消息傳遞
