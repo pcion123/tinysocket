@@ -43,17 +43,14 @@
         <dependency>
             <groupId>com.vscodelife</groupId>
             <artifactId>socketio</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.vscodelife</groupId>
             <artifactId>serversocket</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.vscodelife</groupId>
             <artifactId>clientsocket</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         
         <!-- Spring Boot DevTools -->
@@ -71,13 +68,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Socket.IO 模組依賴 -->
-        <dependency>
-            <groupId>com.vscodelife</groupId>
-            <artifactId>socketio</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
         <!-- JLine for enhanced command line interface -->
         <dependency>
             <groupId>org.jline</groupId>
