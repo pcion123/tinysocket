@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="800" height="620" xmlns="http://www.w3.org/2000/svg">
+<svg width="800" height="650" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="100%" fill="#ffffff"/>
   <defs>
     <style>
@@ -70,7 +70,7 @@
   <text x="660" y="298" class="component-desc text">端口管理</text>
   <text x="660" y="311" class="component-desc text">生命週期</text>
 
-  <rect x="30" y="370" width="740" height="120" class="layer-box component-layer"/>
+  <rect x="30" y="370" width="740" height="140" class="layer-box component-layer"/>
   <text x="400" y="365" class="layer-title text">Component Layer</text>
   
   <rect x="70" y="400" width="120" height="50" class="box"/>
@@ -92,30 +92,30 @@
   <rect x="320" y="470" width="160" height="30" class="box"/>
   <text x="400" y="485" class="component-title text">Netty Integration Layer</text>
 
-  <rect x="20" y="520" width="760" height="80" class="layer-box core-layer"/>
-  <text x="400" y="515" class="layer-title text">SocketIO Core</text>
+  <rect x="20" y="540" width="760" height="80" class="layer-box core-layer"/>
+  <text x="400" y="535" class="layer-title text">SocketIO Core</text>
   
-  <rect x="60" y="540" width="100" height="40" class="box"/>
-  <text x="110" y="555" class="component-title text">HeaderBase</text>
-  <text x="110" y="567" class="component-desc text">協議頭基類</text>
+  <rect x="60" y="560" width="100" height="40" class="box"/>
+  <text x="110" y="575" class="component-title text">HeaderBase</text>
+  <text x="110" y="587" class="component-desc text">協議頭基類</text>
   
-  <rect x="190" y="540" width="100" height="40" class="box"/>
-  <text x="240" y="555" class="component-title text">IConnection</text>
-  <text x="240" y="567" class="component-desc text">連接接口</text>
+  <rect x="190" y="560" width="100" height="40" class="box"/>
+  <text x="240" y="575" class="component-title text">IConnection</text>
+  <text x="240" y="587" class="component-desc text">連接接口</text>
   
-  <rect x="320" y="540" width="100" height="40" class="box"/>
-  <text x="370" y="555" class="component-title text">ByteArrayBuffer</text>
-  <text x="370" y="567" class="component-desc text">緩衝區</text>
+  <rect x="320" y="560" width="100" height="40" class="box"/>
+  <text x="370" y="575" class="component-title text">ByteArrayBuffer</text>
+  <text x="370" y="587" class="component-desc text">緩衝區</text>
   
-  <rect x="450" y="540" width="100" height="40" class="box"/>
-  <text x="500" y="555" class="component-title text">MessageBase</text>
-  <text x="500" y="567" class="component-desc text">消息基類</text>
+  <rect x="450" y="560" width="100" height="40" class="box"/>
+  <text x="500" y="575" class="component-title text">MessageBase</text>
+  <text x="500" y="587" class="component-desc text">消息基類</text>
   
-  <rect x="580" y="540" width="100" height="40" class="box"/>
-  <text x="630" y="555" class="component-title text">Utilities</text>
-  <text x="630" y="567" class="component-desc text">工具類</text>
+  <rect x="580" y="560" width="100" height="40" class="box"/>
+  <text x="630" y="575" class="component-title text">Utilities</text>
+  <text x="630" y="587" class="component-desc text">工具類</text>
 
   <path class="arrow" d="M 250 180 L 250 220"/>
   <path class="arrow" d="M 250 340 L 250 370"/>
-  <path class="arrow" d="M 250 490 L 250 520"/>
+  <path class="arrow" d="M 250 510 L 250 540"/>
 </svg>

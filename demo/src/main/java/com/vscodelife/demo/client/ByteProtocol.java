@@ -75,7 +75,7 @@ public class ByteProtocol {
         long requestId = message.getRequestId();
         int code = message.getBuffer().readInt();
         String msg = message.getBuffer().readString();
-        logger.debug("sessionId={} requestId={} rcv server notify getUserList, code={}, msg={}", sessionId, requestId,
+        logger.debug("sessionId={} requestId={} rcv server notify get user list, code={}, msg={}", sessionId, requestId,
                 code, msg);
         if (code == 200) {
             List<User> users = message.getBuffer().readList(User.class);
@@ -86,7 +86,22 @@ public class ByteProtocol {
         }
     }
 
-    @ProtocolTag(mainNo = 1, subNo = 4, describe = "發送消息響應")
+    @ProtocolTag(mainNo = 1, subNo = 4, describe = "獲取用戶信息響應")
+    public static void rcvGetUserInfo(ByteMessage<ByteUserHeader> message) {
+        long sessionId = message.getSessionId();
+        long requestId = message.getRequestId();
+        int code = message.getBuffer().readInt();
+        String msg = message.getBuffer().readString();
+        logger.debug("sessionId={} requestId={} rcv server notify get user info, code={}, msg={}", sessionId, requestId,
+                code, msg);
+        if (code == 200) {
+            User user = message.getBuffer().readStruct(User.class);
+            System.out.println("=== 用戶信息 ===");
+            System.out.println(String.format("用戶編號: %s 用戶名稱: %s", user.getUserId(), user.getUserName()));
+        }
+    }
+
+    @ProtocolTag(mainNo = 1, subNo = 5, describe = "發送消息響應")
     public static void rcvSay(ByteMessage<ByteUserHeader> message) {
         long sessionId = message.getSessionId();
         long requestId = message.getRequestId();
@@ -96,7 +111,7 @@ public class ByteProtocol {
                 code, msg);
     }
 
-    @ProtocolTag(mainNo = 1, subNo = 5, describe = "接收聊天消息", safed = true)
+    @ProtocolTag(mainNo = 1, subNo = 6, describe = "接收聊天消息", safed = true)
     public static void rcvMessage(ByteMessage<ByteUserHeader> message) {
         long sessionId = message.getSessionId();
         long requestId = message.getRequestId();

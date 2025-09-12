@@ -1,18 +1,28 @@
 package com.vscodelife.socketio.message;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.annotation.JSONField;
+import com.vscodelife.socketio.buffer.JsonMapBuffer;
 import com.vscodelife.socketio.message.base.HeaderBase;
 import com.vscodelife.socketio.message.base.MessageBase;
 
-public class JsonMessage<H extends HeaderBase> extends MessageBase<H, String> {
-    private JSONObject jsonBody;
-
+public class JsonMessage<H extends HeaderBase> extends MessageBase<H, JsonMapBuffer> {
     public JsonMessage() {
         super();
     }
 
-    public JsonMessage(H header, String buffer) {
+    public JsonMessage(H header, JsonMapBuffer buffer) {
         super(header, buffer);
+    }
+
+    @JSONField(name = "buffer")
+    public String getBufferAsString() {
+        return buffer != null ? buffer.toJson() : null;
+    }
+
+    @Override
+    @JSONField(serialize = false)
+    public JsonMapBuffer getBuffer() {
+        return super.getBuffer();
     }
 
     @Override
@@ -36,8 +46,8 @@ public class JsonMessage<H extends HeaderBase> extends MessageBase<H, String> {
             H clonedHeader = (H) this.header.clone();
             cloned.setHeader(clonedHeader);
 
-            // 克隆 buffer（String 是不可變的，直接賦值即可）
-            cloned.setBuffer(this.buffer);
+            // 克隆 buffer
+            cloned.setBuffer(this.buffer.clone());
 
             return cloned;
         } catch (IllegalStateException e) {
@@ -46,26 +56,5 @@ public class JsonMessage<H extends HeaderBase> extends MessageBase<H, String> {
         } catch (Exception e) {
             throw new RuntimeException("Failed to clone JsonMessage: " + e.getMessage(), e);
         }
-    }
-
-    public int getIntValue(String key) {
-        if (jsonBody == null) {
-            jsonBody = JSONObject.parseObject(getBuffer());
-        }
-        return jsonBody.getIntValue(key);
-    }
-
-    public String getStringValue(String key) {
-        if (jsonBody == null) {
-            jsonBody = JSONObject.parseObject(getBuffer());
-        }
-        return jsonBody.getString(key);
-    }
-
-    public <T> T parseValue(String key, Class<T> clazz) {
-        if (jsonBody == null) {
-            jsonBody = JSONObject.parseObject(getBuffer());
-        }
-        return jsonBody.getObject(key, clazz);
     }
 }

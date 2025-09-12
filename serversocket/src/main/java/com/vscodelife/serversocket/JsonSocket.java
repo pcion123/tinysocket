@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
+import com.vscodelife.socketio.buffer.JsonMapBuffer;
 import com.vscodelife.socketio.connection.IConnection;
 import com.vscodelife.socketio.constant.ProtocolId;
 import com.vscodelife.socketio.message.JsonCache;
@@ -22,8 +23,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public abstract class JsonSocket<H extends HeaderBase, C extends IConnection<String>>
-        extends SocketBase<H, C, JsonMessage<H>, String> {
+public abstract class JsonSocket<H extends HeaderBase, C extends IConnection<JsonMapBuffer>>
+        extends SocketBase<H, C, JsonMessage<H>, JsonMapBuffer> {
     protected final ExecutorService mainThread = Executors
             .newSingleThreadExecutor(ExecutorUtil.makeName("jsonsocketmainpool"));
     protected final ScheduledExecutorService scheduledThread = Executors
@@ -130,6 +131,6 @@ public abstract class JsonSocket<H extends HeaderBase, C extends IConnection<Str
         long sessionId = header.getSessionId();
         long requestId = header.getRequestId();
         logger.info("sessionId={} requestId={} rcv client ask ping request", sessionId, requestId);
-        send(sessionId, mainNo, subNo, requestId, "pong");
+        send(sessionId, mainNo, subNo, requestId, new JsonMapBuffer());
     }
 }

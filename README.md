@@ -74,15 +74,35 @@ tinysocket/
 │   └── pom.xml
 ├── demo/                 # 完整示範應用 🎯
 │   ├── src/main/java/com/vscodelife/demo/
-│   │   ├── DemoByteServer.java        # 服務器啟動示例
+│   │   ├── DemoByteServer.java        # 二進制服務器啟動示例
 │   │   ├── DemoByteClient.java        # 客戶端啟動示例
-│   │   ├── User.java                  # 用戶實體類
-│   │   ├── server/                    # 服務器端完整實現
+│   │   ├── DemoChatServer.java        # 聊天服務器啟動示例
+│   │   ├── entity/                    # 實體類
+│   │   │   ├── User.java                  # 用戶實體類
+│   │   │   └── ChatMessage.java          # 聊天訊息實體類
+│   │   ├── server/                    # 服務器端完整實現（二進制）
 │   │   │   ├── TestByteServer.java        # 測試服務器
 │   │   │   ├── ByteUserHeader.java        # 自定義 Header
 │   │   │   ├── ByteUserConnection.java    # 自定義 Connection
 │   │   │   ├── ByteInitializer.java       # Netty 初始化器
-│   │   │   └── ByteProtocol.java          # 協議處理器（註解驅動）
+│   │   │   ├── ByteProtocol.java          # 協議處理器（註解驅動）
+│   │   │   ├── component/             # 服務器組件
+│   │   │   │   ├── ChatManager.java       # 聊天管理器
+│   │   │   │   └── UserManager.java       # 用戶管理器
+│   │   │   ├── exception/             # 異常處理
+│   │   │   └── handler/               # 服務器處理器
+│   │   │       └── ByteMessageHandler.java # 訊息處理器
+│   │   ├── webserver/                 # Web服務器端實現（JSON聊天）
+│   │   │   ├── ChatWebServer.java         # JSON聊天服務器
+│   │   │   ├── ChatUserHeader.java        # 聊天用戶Header
+│   │   │   ├── ChatUserConnection.java    # 聊天用戶連接
+│   │   │   ├── ChatInitializer.java       # 聊天初始化器
+│   │   │   ├── ChatProtocol.java          # 聊天協議處理器
+│   │   │   ├── component/             # Web服務器組件
+│   │   │   │   ├── ChatManager.java       # 聊天管理器
+│   │   │   │   └── UserManager.java       # 用戶管理器
+│   │   │   ├── handler/               # Web處理器
+│   │   │   └── util/                  # Web工具類
 │   │   └── client/                    # 客戶端完整實現
 │   │       ├── TestByteClient.java        # 測試客戶端
 │   │       ├── ByteUserHeader.java        # 客戶端 Header
@@ -92,6 +112,11 @@ tinysocket/
 │   │           ├── ByteConnectHandler.java
 │   │           ├── ByteHeaderDecoderHandler.java
 │   │           └── ByteHeaderEncoderHandler.java
+│   ├── chatjs/                        # Web聊天客戶端
+│   │   ├── index.html                     # 聊天室首頁
+│   │   ├── chat-client.js                # 聊天客戶端邏輯
+│   │   ├── app.js                         # 應用主邏輯
+│   │   └── styles.css                     # 樣式表
 │   └── pom.xml
 ├── .vscode/              # VS Code 開發環境配置
 ├── mvnw & mvnw.cmd      # Maven Wrapper
@@ -132,13 +157,13 @@ tinysocket/
 - **HttpUtil**: HTTP客戶端封裝，簡化HTTP請求操作
 - **ExecutorUtil**: 線程池管理工具，支援命名和監控
 
-### 🌐 ServerSocket 服務器模組 (v0.0.1-SNAPSHOT)
+### 🚀 ServerSocket 服務器模組 (v0.0.1-SNAPSHOT)
 
 基於socketio核心庫實現的服務器端解決方案：
 
 #### 🔌 高性能Socket服務器
 - **ByteSocket**: 二進制數據Socket服務器，支援高性能位元組數據傳輸
-- **JsonSocket**: JSON格式Socket服務器，便於調試和跨語言通信  
+- **JsonSocket**: JSON格式Socket服務器，便於調試和跨語言通信，支援WebSocket協議
 - **SocketBase**: 通用Socket服務器基類，提供完整的泛型設計
 - **連接管理**: 支援大量並發連接，內建連接池和生命周期管理
 
@@ -146,6 +171,21 @@ tinysocket/
 - **組件化設計**: 限流器(RateLimiter)、協議捕獲器(ProtocolCatcher)等可插拔組件
 - **生產就緒**: 內建健康檢查、監控指標、優雅關閉等企業級特性
 - **配置靈活**: 支援多種配置方式，包括Java Config和註解驅動
+
+### 🔗 ClientSocket 客戶端模組 (v0.0.1-SNAPSHOT)
+
+高性能、智能化的客戶端Socket解決方案：
+
+#### 🚀 智能客戶端功能
+- **ByteSocket**: 二進制數據客戶端，支援自動重連和心跳保持
+- **JsonSocket**: JSON格式客戶端，便於Web端和跨語言通信
+- **自動重連機制**: 智能的斷線重連，支援退避算法
+- **心跳保持**: 自動心跳檢測，保持連接活性
+
+#### 🔧 開發友好特性
+- **協議處理器**: 基於註解的協議自動註冊和處理
+- **錯誤處理**: 完善的異常捕獲和恢復機制
+- **性能監控**: 內建連接狀態和性能指標監控
 
 ## 🛠️ 技術棧
 
@@ -298,6 +338,50 @@ public class MyByteSocket extends ByteSocket<HeaderBase, IConnection<ByteArrayBu
     }
 }
 
+// JSON聊天服務器示例（新增功能）
+import com.vscodelife.serversocket.JsonSocket;
+import com.vscodelife.socketio.buffer.JsonMapBuffer;
+
+public class ChatWebServer extends JsonSocket<ChatUserHeader, ChatUserConnection> {
+    
+    public ChatWebServer(int port, int maxConnectionLimit) {
+        super(logger, port, maxConnectionLimit, ChatInitializer.class);
+        
+        // 設置協議處理器
+        ChatProtocol.server = this;
+        
+        // 註冊協議處理器
+        int protocolCount = protocolRegister.scanAndRegisterProtocols(ChatProtocol.class);
+    }
+    
+    @Override
+    public String getVersion() {
+        return "0.0.1";
+    }
+    
+    @Override
+    protected Class<ChatUserConnection> getConnectionClass() {
+        return ChatUserConnection.class;
+    }
+    
+    @Override
+    public void onConnect(long sessionId) {
+        logger.debug("聊天用戶連接: sessionId={}", sessionId);
+    }
+    
+    @Override
+    public void onDisconnect(long sessionId) {
+        logger.debug("聊天用戶斷開: sessionId={}", sessionId);
+        
+        // 處理用戶下線邏輯
+        ChatUserConnection connection = getConnection(sessionId);
+        if (connection != null) {
+            String userId = connection.getUserId();
+            ChatManager.getInstance().userOfflineWithMessage(userId);
+        }
+    }
+}
+
 // Spring Boot應用程式
 @SpringBootApplication
 public class SocketServerApp {
@@ -307,11 +391,186 @@ public class SocketServerApp {
         return new MyByteSocket(8080, 1000);
     }
     
+    @Bean
+    public ChatWebServer chatWebServer() {
+        return new ChatWebServer(30002, 100);  // 新增聊天服務器
+    }
+    
     @PostConstruct
     public void startServer() {
-        socketServer().bind(); // 啟動服務器
+        socketServer().bind(); // 啟動二進制服務器
+        chatWebServer().bind(); // 啟動聊天服務器
     }
 }
+```
+
+#### 聊天管理系統使用（新增功能）
+```java
+import com.vscodelife.demo.server.component.ChatManager;
+import com.vscodelife.demo.server.component.UserManager;
+import com.vscodelife.demo.entity.ChatMessage;
+import com.vscodelife.demo.entity.User;
+
+// 聊天管理器 - 維護聊天記錄和在線用戶
+ChatManager chatManager = ChatManager.getInstance();
+
+// 用戶上線並發送系統訊息
+User user = new User("U001", "張三", "男", 25, "工程師");
+ChatMessage onlineMsg = chatManager.userOnlineWithMessage(user);
+
+// 添加聊天訊息
+ChatMessage userMsg = chatManager.addMessage("U001", "大家好！");
+
+// 用戶下線並發送系統訊息
+ChatMessage offlineMsg = chatManager.userOfflineWithMessage("U001");
+
+// 獲取聊天記錄
+List<ChatMessage> messages = chatManager.getAllMessages();
+
+// 獲取在線用戶
+List<User> onlineUsers = chatManager.getAllOnlineUsers();
+int userCount = chatManager.getOnlineUserCount();
+
+// 打印統計信息
+String stats = chatManager.getStatistics();
+System.out.println(stats);
+```
+
+#### Web聊天室前端集成（JavaScript客戶端）
+```javascript
+// 基於WebSocket的聊天客戶端
+class TinySocketChatClient {
+    constructor(serverUrl) {
+        this.serverUrl = serverUrl;
+        this.websocket = null;
+        this.sessionId = null;
+        this.userId = null;
+        this.token = null;
+    }
+    
+    // 連接聊天服務器
+    async connect(userId, password) {
+        return new Promise((resolve, reject) => {
+            this.websocket = new WebSocket(this.serverUrl);
+            
+            this.websocket.onopen = () => {
+                console.log('WebSocket連接已建立');
+                this.login(userId, password).then(resolve).catch(reject);
+            };
+            
+            this.websocket.onmessage = (event) => {
+                this.handleMessage(JSON.parse(event.data));
+            };
+            
+            this.websocket.onerror = (error) => {
+                console.error('WebSocket錯誤:', error);
+                reject(error);
+            };
+        });
+    }
+    
+    // 用戶登入
+    async login(userId, password) {
+        const message = {
+            header: {
+                version: "1.0",
+                mainNo: 1,
+                subNo: 1,
+                sessionId: 0,
+                requestId: Date.now()
+            },
+            buffer: {
+                userId: userId,
+                password: password
+            }
+        };
+        
+        this.websocket.send(JSON.stringify(message));
+    }
+    
+    // 發送聊天訊息
+    sendChatMessage(content) {
+        if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket未連接');
+        }
+        
+        const message = {
+            header: {
+                version: "1.0",
+                mainNo: 2,
+                subNo: 1,
+                sessionId: this.sessionId,
+                requestId: Date.now(),
+                userId: this.userId,
+                token: this.token
+            },
+            buffer: {
+                content: content
+            }
+        };
+        
+        this.websocket.send(JSON.stringify(message));
+    }
+    
+    // 處理接收到的訊息
+    handleMessage(message) {
+        const { header, buffer } = message;
+        
+        switch (header.mainNo) {
+            case 1: // 登入回應
+                if (buffer.code === 1) {
+                    this.sessionId = header.sessionId;
+                    this.token = buffer.token;
+                    this.onLoginSuccess(buffer);
+                } else {
+                    this.onLoginFailed(buffer.message);
+                }
+                break;
+                
+            case 2: // 聊天訊息
+                this.onChatMessage(buffer);
+                break;
+                
+            case 3: // 用戶列表更新
+                this.onUserListUpdate(buffer.users);
+                break;
+                
+            case 4: // 系統通知
+                this.onSystemNotification(buffer.message);
+                break;
+        }
+    }
+    
+    // 事件回調（需要實現）
+    onLoginSuccess(data) { /* 登入成功處理 */ }
+    onLoginFailed(message) { /* 登入失敗處理 */ }
+    onChatMessage(data) { /* 聊天訊息處理 */ }
+    onUserListUpdate(users) { /* 用戶列表更新處理 */ }
+    onSystemNotification(message) { /* 系統通知處理 */ }
+}
+
+// 使用示例
+const chatClient = new TinySocketChatClient('ws://localhost:30002');
+
+chatClient.onLoginSuccess = (data) => {
+    console.log('登入成功:', data);
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('chatContainer').style.display = 'block';
+};
+
+chatClient.onChatMessage = (data) => {
+    const messageElement = document.createElement('div');
+    messageElement.className = 'chat-message';
+    messageElement.innerHTML = `
+        <span class="username">${data.userId}</span>
+        <span class="content">${data.content}</span>
+        <span class="time">${new Date(data.timestamp).toLocaleTimeString()}</span>
+    `;
+    document.getElementById('messagesContainer').appendChild(messageElement);
+};
+
+// 連接並登入
+chatClient.connect('U001', 'password123');
 ```
 
 #### JSON高性能處理
@@ -353,6 +612,35 @@ System.out.println("平均處理時間: " + counter.getAverageTime() + "ms");
 ```
 
 ## 🔧 開發指南
+
+### 聊天應用快速部署指南
+
+#### 啟動聊天服務器
+```bash
+# 方法1: 直接運行主類
+./mvnw exec:java -Dexec.mainClass="com.vscodelife.demo.DemoChatServer" -pl demo
+
+# 方法2: 使用 Spring Boot 運行
+./mvnw spring-boot:run -pl demo -Dspring-boot.run.main-class=com.vscodelife.demo.DemoChatServer
+```
+
+#### 訪問Web聊天室
+```bash
+# 在瀏覽器中打開
+http://localhost:30002/chatjs/index.html
+
+# 或使用內建HTTP服務器（如果已配置）
+# 默認連接: ws://localhost:30002
+```
+
+#### 聊天室功能特色
+- ✅ **實時聊天**: 基於WebSocket的即時通訊
+- ✅ **用戶管理**: 自動用戶上線/下線通知
+- ✅ **訊息記錄**: 維護最近50條聊天記錄
+- ✅ **在線列表**: 實時顯示在線用戶
+- ✅ **系統通知**: 用戶狀態變化自動通知
+- ✅ **美觀界面**: 現代化的Web聊天界面
+- ✅ **移動適配**: 響應式設計支援手機瀏覽器
 
 ### Maven依賴管理
 
@@ -533,11 +821,19 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
   - [x] 服務器和客戶端完整示例
   - [x] 協議處理演示
   - [x] 性能測試用例
+  - [x] 聊天服務器實現（DemoChatServer）🆕
+  - [x] Web聊天室前端（chatjs）🆕
+  - [x] 聊天管理系統（ChatManager、UserManager）🆕
 - [ ] **測試完善**: 提升測試覆蓋率至90%以上
 - [ ] **文檔完善**: API文檔和使用指南
 - [ ] **性能優化**: 基準測試和性能調優
 
 ### 🚀 中期目標（v0.2.0 - v0.3.0）
+- [x] **聊天系統**: 完整的聊天應用實現 ✅ 完成 🆕
+  - [x] JSON協議聊天服務器
+  - [x] Web聊天室界面
+  - [x] 用戶管理和聊天記錄
+  - [x] 實時通訊和系統通知
 - [ ] **websocket**: WebSocket協議支援
   - [ ] WebSocket服務器實現
   - [ ] HTTP升級協議處理
@@ -562,16 +858,19 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 - 豐富的API文檔和示例
 - 完整的IDE支援
 - 詳細的錯誤信息和調試
+- 實時聊天應用示例
 
 ### ⚡ **高性能**
 - 基於Netty的異步I/O
 - 零拷貝內存管理
 - 智能的連接復用
+- JSON協議優化
 
 ### 🔧 **易擴展**
 - 模組化架構設計
 - 清晰的API邊界
 - 插件化擴展機制
+- 聊天組件系統
 
 ### 🛡️ **產品級**
 - 完善的錯誤處理
@@ -630,7 +929,8 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 - ✅ **Maven Wrapper**: 統一的構建環境
 - ✅ **清晰架構**: 模組化設計易於理解和擴展
 - ✅ **詳細文檔**: 豐富的註釋和使用說明
-- ✅ **示例代碼**: 實用的代碼示例和最佳實踐
+- ✅ **示例代碼**: 實用的代碼示例和最佳實踐  
+- ✅ **聊天應用**: 完整的實時聊天系統示例
 
 ## 📄 許可證
 
@@ -653,10 +953,10 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 *讓網絡通信變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月4日  
+> **最後更新**: 2025年9月13日  
 > **Java版本**: OpenJDK 21+  
 > **Spring Boot版本**: 3.5.4
-> **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅
+> **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅ | 聊天系統 ✅
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
 [![GitHub Forks](https://img.shields.io/github/forks/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
