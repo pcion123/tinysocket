@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vscodelife.demo.entity.ChatMessage;
 import com.vscodelife.demo.entity.User;
-import com.vscodelife.demo.server.exception.ChatRuntimeException;
+import com.vscodelife.demo.exception.ChatRuntimeException;
 
 /**
  * 聊天管理器
@@ -300,6 +300,15 @@ public class ChatManager {
         lock.readLock().lock();
         try {
             return Collections.unmodifiableList(new ArrayList<>(onlineUsers.values()));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public User getUser(String userId) {
+        lock.readLock().lock();
+        try {
+            return onlineUsers.get(userId);
         } finally {
             lock.readLock().unlock();
         }

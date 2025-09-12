@@ -1,0 +1,1483 @@
+/* 全局樣式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+/* 登入界面樣式 */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-form {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.login-form h2 {
+    color: #5a6cf3;
+    margin: 0;
+    font-size: 24px;
+    flex: 1;
+    text-align: left;
+}
+
+.login-form h2 i {
+    margin-right: 10px;
+}
+
+/* 登入頁面主題切換按鈕樣式 */
+.login-theme-toggle-btn {
+    background: rgba(90, 108, 243, 0.1);
+    color: #5a6cf3;
+    border: 2px solid rgba(90, 108, 243, 0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.login-theme-toggle-btn:hover {
+    background: rgba(90, 108, 243, 0.2);
+    border-color: rgba(90, 108, 243, 0.5);
+    transform: scale(1.05);
+}
+
+.login-theme-toggle-btn i {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.login-theme-toggle-btn:hover i {
+    transform: rotate(15deg);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #5a6cf3;
+    box-shadow: 0 0 0 3px rgba(90, 108, 243, 0.1);
+}
+
+.connect-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.connect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(90, 108, 243, 0.3);
+}
+
+.connect-btn:active {
+    transform: translateY(0);
+}
+
+.connect-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.status-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.status-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 聊天界面樣式 */
+.chat-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.chat-header {
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-left h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.header-left h3 i {
+    margin-right: 8px;
+}
+
+.connection-status {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    gap: 0px !important;
+    /* 移除元素間的間距 */
+    flex-wrap: nowrap;
+    /* 不換行 */
+    justify-content: flex-start;
+    /* 往左對齊 */
+}
+
+.connection-status i {
+    margin-right: 5px !important;
+    /* 強制減少右邊距 */
+    font-size: 8px;
+}
+
+.connection-status.connected i {
+    color: #4ade80;
+}
+
+.connection-status.disconnected i {
+    color: #ef4444;
+}
+
+/* 心跳狀態樣式 - 訊號強度顯示 */
+.heartbeat-status {
+    font-size: 13px !important;
+    /* 增加字體大小 */
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-left: 0px !important;
+    /* 減少左邊距，讓訊號更往左靠 */
+    margin-top: 0px !important;
+    /* 保持水平對齊 */
+    margin-bottom: 0px !important;
+    /* 保持水平對齊 */
+    padding: 4px 8px !important;
+    /* 增加內邊距 */
+    border-radius: 6px !important;
+    /* 增加圓角 */
+    opacity: 1.0 !important;
+    /* 完全不透明 */
+    transition: opacity 0.3s ease;
+    background: rgba(255, 255, 255, 0.3) !important;
+    /* 更亮的背景 */
+    border: 2px solid rgba(255, 255, 255, 0.6) !important;
+    /* 更亮的邊框 */
+    color: #ffffff !important;
+    /* 純白色文字 */
+    font-weight: bold !important;
+    /* 加粗字體 */
+}
+
+/* 確保心跳文字是白色 */
+.heartbeat-status .heartbeat-text {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1.0) !important;
+    /* 更強的黑色陰影 */
+}
+
+/* 心跳啟動後變為不透明 */
+.heartbeat-status.active {
+    opacity: 1;
+}
+
+/* 隱藏狀態 - 改為簡單的方式 */
+.heartbeat-status.hidden {
+    display: none !important;
+}
+
+/* 訊號條容器 */
+.signal-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5px;
+    /* 縮小間距 */
+    margin-right: 4px;
+    /* 縮小右邊距 */
+    height: 9px;
+    /* 縮小高度為一半 */
+}
+
+/* 訊號條基本樣式 */
+.signal-bar {
+    width: 2.5px;
+    /* 縮小寬度為一半 */
+    background: #1f2937;
+    /* 更深的深灰色作為預設 */
+    border-radius: 1px;
+    /* 縮小圓角 */
+    transition: background-color 0.3s ease;
+    border: 1px solid #000000;
+    /* 黑色邊框讓條更明顯 */
+}
+
+.signal-bar.bar1 {
+    height: 2.5px;
+    /* 縮小為一半 */
+}
+
+/* 增加高度 */
+.signal-bar.bar2 {
+    height: 4.5px;
+    /* 縮小為一半 */
+}
+
+.signal-bar.bar3 {
+    height: 6.5px;
+    /* 縮小為一半 */
+}
+
+.signal-bar.bar4 {
+    height: 8.5px;
+    /* 縮小為一半 */
+}
+
+/* 訊號強度等級 - 更亮的綠色 (0-250ms) - 所有條都亮 */
+.heartbeat-status.excellent .signal-bar {
+    background: #00ff00;
+    /* 純綠色 */
+    border-color: #00ff00;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 1.0), 0 0 6px rgba(0, 255, 0, 0.8) !important;
+    /* 雙重發光效果 */
+}
+
+/* 訊號強度等級 - 更亮的黃色 (251-300ms) - 前3條亮 */
+.heartbeat-status.good .signal-bar.bar1,
+.heartbeat-status.good .signal-bar.bar2,
+.heartbeat-status.good .signal-bar.bar3 {
+    background: #ffff00;
+    /* 純黃色 */
+    border-color: #ffff00;
+    box-shadow: 0 0 12px rgba(255, 255, 0, 1.0), 0 0 6px rgba(255, 255, 0, 0.8) !important;
+}
+
+.heartbeat-status.good .signal-bar.bar4 {
+    background: #1f2937;
+    border-color: #000000;
+}
+
+/* 訊號強度等級 - 更亮的橘色 (301-800ms) - 前2條亮 */
+.heartbeat-status.fair .signal-bar.bar1,
+.heartbeat-status.fair .signal-bar.bar2 {
+    background: #ff8800;
+    /* 鮮橘色 */
+    border-color: #ff8800;
+    box-shadow: 0 0 12px rgba(255, 136, 0, 1.0), 0 0 6px rgba(255, 136, 0, 0.8) !important;
+}
+
+.heartbeat-status.fair .signal-bar.bar3,
+.heartbeat-status.fair .signal-bar.bar4 {
+    background: #1f2937;
+    border-color: #000000;
+}
+
+/* 訊號強度等級 - 更亮的紅色 (>800ms) - 只有第1條亮 */
+.heartbeat-status.poor .signal-bar.bar1 {
+    background: #ff0000;
+    /* 純紅色 */
+    border-color: #ff0000;
+    box-shadow: 0 0 12px rgba(255, 0, 0, 1.0), 0 0 6px rgba(255, 0, 0, 0.8) !important;
+}
+
+.heartbeat-status.poor .signal-bar.bar2,
+.heartbeat-status.poor .signal-bar.bar3,
+.heartbeat-status.poor .signal-bar.bar4 {
+    background: #1f2937;
+    border-color: #000000;
+}
+
+/* 發送中狀態 */
+.heartbeat-status.sending .signal-bar {
+    background: #8000ff;
+    /* 鮮紫色表示正在發送 */
+    border-color: #6600cc;
+    box-shadow: 0 0 6px rgba(128, 0, 255, 0.8);
+    animation: pulse 1.5s ease-in-out infinite;
+    /* 添加脈動動畫 */
+}
+
+/* 錯誤狀態 */
+.heartbeat-status.error .signal-bar {
+    background: #ff0000;
+    /* 純紅色表示錯誤 */
+    border-color: #cc0000;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 1.0);
+    animation: blink 1s ease-in-out infinite;
+    /* 添加閃爍動畫 */
+}
+
+/* 脈動動畫 */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* 閃爍動畫 */
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* 訊號動畫 */
+@keyframes signal-pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Token 狀態樣式 */
+.token-status {
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-left: 10px !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    opacity: 1.0 !important;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border: 2px solid rgba(255, 255, 255, 0.6) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    gap: 5px;
+}
+
+/* Token 狀態文字 */
+.token-status .token-text {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1.0) !important;
+    min-width: 70px;
+}
+
+/* Token 圖標 */
+.token-status .token-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.token-status .token-icon i {
+    font-size: 14px;
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1.0) !important;
+}
+
+/* Token 狀態變體 */
+.token-status.active {
+    opacity: 1.0 !important;
+}
+
+.token-status.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* 正常狀態 */
+.token-status.normal .token-icon i {
+    color: #22c55e !important;
+    /* 綠色 */
+    animation: none;
+}
+
+/* 刷新中狀態 */
+.token-status.refreshing {
+    background: rgba(59, 130, 246, 0.3) !important;
+    /* 藍色背景 */
+    border-color: rgba(59, 130, 246, 0.6) !important;
+}
+
+.token-status.refreshing .token-icon i {
+    color: #3b82f6 !important;
+    /* 藍色 */
+    animation: fa-spin 1s linear infinite;
+    /* 旋轉動畫 */
+}
+
+/* 刷新成功狀態 */
+.token-status.success {
+    background: rgba(34, 197, 94, 0.3) !important;
+    /* 綠色背景 */
+    border-color: rgba(34, 197, 94, 0.6) !important;
+}
+
+.token-status.success .token-icon i {
+    color: #22c55e !important;
+    /* 綠色 */
+    animation: pulse 1s ease-in-out;
+}
+
+/* 錯誤狀態 */
+.token-status.error {
+    background: rgba(239, 68, 68, 0.3) !important;
+    /* 紅色背景 */
+    border-color: rgba(239, 68, 68, 0.6) !important;
+}
+
+.token-status.error .token-icon i {
+    color: #ef4444 !important;
+    /* 紅色 */
+    animation: blink 1s ease-in-out infinite;
+}
+
+/* 過期狀態 */
+.token-status.expired {
+    background: rgba(245, 101, 101, 0.3) !important;
+    /* 紅橙色背景 */
+    border-color: rgba(245, 101, 101, 0.6) !important;
+}
+
+.token-status.expired .token-icon i {
+    color: #f56565 !important;
+    /* 紅橙色 */
+    animation: blink 0.5s ease-in-out infinite;
+}
+
+.heartbeat-text {
+    font-size: 10px;
+    font-weight: 500;
+    color: #475569;
+    /* 改為深色，在白色背景上更清楚 */
+    min-width: 32px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.current-user {
+    font-size: 14px;
+}
+
+.disconnect-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.disconnect-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 主題切換按鈕樣式 */
+.theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 36px;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.theme-toggle-btn i {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover i {
+    transform: rotate(15deg);
+}
+
+.chat-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* 用戶面板樣式 */
+.users-panel {
+    width: 280px;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: 15px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h4 {
+    color: #475569;
+    font-size: 14px;
+    margin: 0;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+.refresh-btn:hover {
+    color: #5a6cf3;
+    background: #f1f5f9;
+}
+
+.users-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 5px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.user-item:hover {
+    transform: translateX(5px);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.user-status {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* 聊天面板樣式 */
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f9fafb;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message.system {
+    align-items: center;
+}
+
+.message.user {
+    align-items: flex-start;
+}
+
+.message.current-user {
+    align-items: flex-end;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.message-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 10px;
+}
+
+.message-time {
+    margin-left: auto;
+}
+
+.message-content {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.message.system .message-content {
+    background: #fef3cd;
+    color: #856404;
+    text-align: center;
+    font-style: italic;
+    border-radius: 20px;
+    max-width: 80%;
+}
+
+.message.user .message-content {
+    background: white;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.message.current-user .message-content {
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    color: white;
+}
+
+/* 消息輸入區樣式 */
+.message-input-container {
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    padding: 20px;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#messageInput:focus {
+    border-color: #5a6cf3;
+}
+
+.send-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #5a6cf3, #7c4dff);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(90, 108, 243, 0.4);
+}
+
+.send-btn:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.input-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* 通知樣式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    z-index: 1000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: #10b981;
+}
+
+.notification.error {
+    background: #ef4444;
+}
+
+.notification.info {
+    background: #3b82f6;
+}
+
+/* 載入中遮罩樣式 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.loading-spinner {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.loading-spinner i {
+    font-size: 32px;
+    color: #5a6cf3;
+    margin-bottom: 15px;
+}
+
+.loading-spinner p {
+    color: #6b7280;
+    font-weight: 600;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .chat-content {
+        flex-direction: column;
+    }
+
+    .users-panel {
+        width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .message-content {
+        max-width: 85%;
+    }
+
+    .login-form {
+        margin: 10px;
+        padding: 30px 20px;
+    }
+
+    .login-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .login-form h2 {
+        text-align: center;
+        font-size: 20px;
+    }
+
+    .login-theme-toggle-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-header {
+        padding: 10px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .messages-container {
+        padding: 15px 10px;
+    }
+
+    .message-input-container {
+        padding: 15px 10px;
+    }
+}
+
+/* 自定義滾動條 */
+.users-list::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.users-list::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.users-list::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.users-list::-webkit-scrollbar-thumb:hover,
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: slideIn 0.3s ease-out;
+}
+
+.user-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* 打字動畫 */
+@keyframes typing {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 16px;
+    background: #f3f4f6;
+    border-radius: 18px;
+    margin-bottom: 15px;
+    max-width: 70px;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #9ca3af;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* 用戶資訊彈出框樣式 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-header h3 i {
+    margin-right: 8px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.user-info-content {
+    min-height: 150px;
+}
+
+.loading-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #666;
+    font-size: 16px;
+}
+
+.loading-message i {
+    margin-right: 10px;
+    color: #667eea;
+}
+
+.user-info-item {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.user-info-label {
+    font-weight: 600;
+    color: #333;
+    min-width: 80px;
+    margin-right: 15px;
+}
+
+.user-info-value {
+    color: #666;
+    flex: 1;
+}
+
+.user-info-avatar {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.user-info-avatar i {
+    font-size: 60px;
+    color: #667eea;
+    background: #f0f2ff;
+    padding: 20px;
+    border-radius: 50%;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: #dc3545;
+}
+
+.error-message i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* 用戶列表項目可點擊樣式 */
+.user-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.user-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== 深色主題樣式 ==================== */
+
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #e2e8f0;
+}
+
+/* 登入界面深色樣式 */
+[data-theme="dark"] .login-form {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .login-form h2 {
+    color: #8b5cf6;
+}
+
+/* 登入頁面主題切換按鈕深色樣式 */
+[data-theme="dark"] .login-theme-toggle-btn {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+[data-theme="dark"] .login-theme-toggle-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+[data-theme="dark"] .form-group label {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .form-group input {
+    background: rgba(51, 65, 85, 0.8);
+    border: 2px solid #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .form-group input:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+[data-theme="dark"] .form-group input::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .connect-btn {
+    background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+}
+
+[data-theme="dark"] .connect-btn:hover {
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* 聊天界面深色樣式 */
+[data-theme="dark"] .chat-container {
+    background: #0f172a;
+}
+
+[data-theme="dark"] .chat-header {
+    background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+}
+
+/* 用戶面板深色樣式 */
+[data-theme="dark"] .users-panel {
+    background: #1e293b;
+    border-right: 1px solid #334155;
+}
+
+[data-theme="dark"] .panel-header {
+    background: #334155;
+    border-bottom: 1px solid #475569;
+}
+
+[data-theme="dark"] .panel-header h4 {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .refresh-btn {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .refresh-btn:hover {
+    color: #8b5cf6;
+    background: #475569;
+}
+
+[data-theme="dark"] .user-item {
+    background: #334155;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .user-item:hover {
+    background: #475569;
+    transform: translateX(5px);
+}
+
+[data-theme="dark"] .user-name {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .user-status {
+    color: #94a3b8;
+}
+
+/* 聊天面板深色樣式 */
+[data-theme="dark"] .messages-container {
+    background: #0f172a;
+}
+
+[data-theme="dark"] .message-header {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .message.system .message-content {
+    background: #451a03;
+    color: #fbbf24;
+    border: 1px solid #78350f;
+}
+
+[data-theme="dark"] .message.user .message-content {
+    background: #334155;
+    color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .message.current-user .message-content {
+    background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+    color: white;
+}
+
+/* 消息輸入區深色樣式 */
+[data-theme="dark"] .message-input-container {
+    background: #1e293b;
+    border-top: 1px solid #334155;
+}
+
+[data-theme="dark"] #messageInput {
+    background: #334155;
+    border: 2px solid #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] #messageInput::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] #messageInput:focus {
+    border-color: #8b5cf6;
+}
+
+[data-theme="dark"] .send-btn {
+    background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+}
+
+[data-theme="dark"] .send-btn:hover {
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.5);
+}
+
+[data-theme="dark"] .input-info {
+    color: #94a3b8;
+}
+
+/* 模態對話框深色樣式 */
+[data-theme="dark"] .modal {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .modal-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+}
+
+[data-theme="dark"] .modal-header {
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+}
+
+[data-theme="dark"] .modal-body {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .user-info-item {
+    background: #334155;
+}
+
+[data-theme="dark"] .user-info-label {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .user-info-value {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .user-info-avatar i {
+    color: #8b5cf6;
+    background: #2d1b69;
+}
+
+[data-theme="dark"] .error-message {
+    color: #f87171;
+}
+
+[data-theme="dark"] .loading-message {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .loading-message i {
+    color: #8b5cf6;
+}
+
+/* 載入中遮罩深色樣式 */
+[data-theme="dark"] .loading-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .loading-spinner {
+    background: #1e293b;
+    border: 1px solid #334155;
+}
+
+[data-theme="dark"] .loading-spinner i {
+    color: #8b5cf6;
+}
+
+[data-theme="dark"] .loading-spinner p {
+    color: #94a3b8;
+}
+
+/* 通知深色樣式 */
+[data-theme="dark"] .notification.success {
+    background: #065f46;
+}
+
+[data-theme="dark"] .notification.error {
+    background: #991b1b;
+}
+
+[data-theme="dark"] .notification.info {
+    background: #1e40af;
+}
+
+/* 滾動條深色樣式 */
+[data-theme="dark"] .users-list::-webkit-scrollbar-track,
+[data-theme="dark"] .messages-container::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .users-list::-webkit-scrollbar-thumb,
+[data-theme="dark"] .messages-container::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-theme="dark"] .users-list::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] .messages-container::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* 打字指示器深色樣式 */
+[data-theme="dark"] .typing-indicator {
+    background: #334155;
+}
+
+[data-theme="dark"] .typing-dot {
+    background: #64748b;
+}
+
+/* 心跳和 Token 狀態深色主題調整 */
+[data-theme="dark"] .heartbeat-status {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 2px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+[data-theme="dark"] .token-status {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 2px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+/* 主題切換動畫 */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* 深色模式下的主題切換按鈕圖標 */
+[data-theme="dark"] .theme-toggle-btn i:before {
+    content: "\f185";
+    /* fa-sun 圖標 */
+}

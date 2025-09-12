@@ -27,10 +27,19 @@ public class ByteInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline pipeline = channel.pipeline();
-        pipeline.addLast("encoder", new ByteHeaderEncoderHandler(connector));
+
+        // 1. decoder: 處理入站消息解碼
         pipeline.addLast("decoder", new ByteHeaderDecoderHandler(connector));
-        pipeline.addLast("message", new ByteMessageHandler(connector));
+
+        // 2. connect: 處理連接相關邏輯
         pipeline.addLast("connect", new ByteConnectHandler(connector));
+
+        // 3. message: 處理業務消息
+        pipeline.addLast("message", new ByteMessageHandler(connector));
+
+        // 4. encoder: 處理出站消息編碼 (必須在最後)
+        pipeline.addLast("encoder", new ByteHeaderEncoderHandler(connector));
+
         logger.debug("client {} is connected", channel.remoteAddress());
     }
 }

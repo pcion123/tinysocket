@@ -8,10 +8,11 @@ ClientSocket 模組實現了 TinySocket 框架的客戶端核心功能，包括�
 
 - **🔗 智能連接管理**: 自動重連、心跳保持、連接狀態監控
 - **🔧 泛型設計架構**: 完整的泛型約束確保類型安全
-- **📨 多協議支援**: ByteSocket（二進制）和 JsonSocket（JSON）
+- **📨 多協議支援**: ByteSocket（二進制）和 JsonSocket（JSON，含WebSocket支援）
 - **⚡ 協議處理系統**: 協議註冊、異步處理、異常捕獲
 - **🛠️ 開發友好**: 簡潔的 API 設計和豐富的回調接口
 - **🌐 跨平台支援**: 支援各種客戶端環境（Android、桌面應用、Web 後端）
+- **💬 聊天客戶端**: 完整的聊天應用客戶端實現示例
 
 ### 🎯 設計理念
 
@@ -401,12 +402,13 @@ public class ChatClient extends ByteSocket<ChatHeader> {
 
 ### 3. JsonSocket JSON 客戶端
 
-JsonSocket 提供便於調試和跨語言通信的 JSON 協議支援：
+JsonSocket 提供便於調試和跨語言通信的 JSON 協議支援，特別適用於Web應用和聊天系統：
 
 ```java
+// API客戶端示例
 public class ApiClient extends JsonSocket<ApiHeader> {
     private String apiKey;
-    private CompletableFuture<JsonObject> pendingRequest;
+    private CompletableFuture<JsonMapBuffer> pendingRequest;
     
     public ApiClient(String apiKey) {
         super(LoggerFactory.getLogger(ApiClient.class), ApiInitializer.class);
@@ -421,12 +423,12 @@ public class ApiClient extends JsonSocket<ApiHeader> {
         registerProtocol(ApiProtocol.API_ERROR, catchException(this::handleApiError));
     }
     
-    public CompletableFuture<JsonObject> callApi(String endpoint, JsonObject params) {
+    public CompletableFuture<JsonMapBuffer> callApi(String endpoint, JsonMapBuffer params) {
         if (!isConnected()) {
             return CompletableFuture.failedFuture(new IllegalStateException("未連接"));
         }
         
-        JsonObject request = new JsonObject();
+        JsonMapBuffer request = new JsonMapBuffer();
         request.put("endpoint", endpoint);
         request.put("params", params);
         request.put("apiKey", apiKey);
@@ -439,7 +441,7 @@ public class ApiClient extends JsonSocket<ApiHeader> {
     }
     
     private void handleApiResponse(JsonMessage<ApiHeader> message) {
-        JsonObject response = message.getBuffer();
+        JsonMapBuffer response = message.getBuffer();
         if (pendingRequest != null) {
             pendingRequest.complete(response);
             pendingRequest = null;
@@ -447,7 +449,7 @@ public class ApiClient extends JsonSocket<ApiHeader> {
     }
     
     private void handleApiError(JsonMessage<ApiHeader> message) {
-        JsonObject error = message.getBuffer();
+        JsonMapBuffer error = message.getBuffer();
         if (pendingRequest != null) {
             String errorMsg = error.getString("message");
             pendingRequest.completeExceptionally(new RuntimeException(errorMsg));
@@ -456,17 +458,174 @@ public class ApiClient extends JsonSocket<ApiHeader> {
     }
     
     // 便捷的 API 調用方法
-    public CompletableFuture<JsonObject> getUserInfo(String userId) {
-        JsonObject params = new JsonObject();
+    public CompletableFuture<JsonMapBuffer> getUserInfo(String userId) {
+        JsonMapBuffer params = new JsonMapBuffer();
         params.put("userId", userId);
         return callApi("/user/info", params);
     }
     
-    public CompletableFuture<JsonObject> updateUserProfile(String userId, JsonObject profile) {
-        JsonObject params = new JsonObject();
+    public CompletableFuture<JsonMapBuffer> updateUserProfile(String userId, JsonMapBuffer profile) {
+        JsonMapBuffer params = new JsonMapBuffer();
         params.put("userId", userId);
         params.put("profile", profile);
         return callApi("/user/update", params);
+    }
+}
+
+// 聊天客戶端示例（與demo中的聊天服務器配合使用）
+public class ChatJsonClient extends JsonSocket<ChatUserHeader> {
+    private String userId;
+    private String token;
+    private boolean authenticated = false;
+    
+    public ChatJsonClient(String userId) {
+        super(LoggerFactory.getLogger(ChatJsonClient.class), ChatClientInitializer.class);
+        this.userId = userId;
+        
+        // 配置自動重連
+        setAutoReconnect(true);
+        setReconnectInterval(5); // 5秒重連間隔
+        setMaxReconnectAttempts(10);
+        
+        // 註冊協議處理器
+        registerProtocol(1, 1, this::handleLoginResponse);    // 登入回應
+        registerProtocol(2, 2, this::handleChatMessage);      // 接收聊天訊息
+        registerProtocol(2, 3, this::handleChatHistory);      // 聊天記錄
+        registerProtocol(3, 1, this::handleUserListUpdate);   // 用戶列表更新
+        registerProtocol(4, 2, this::handleSystemNotification); // 系統通知
+    }
+    
+    // 登入聊天室
+    public void login(String password) {
+        if (!isConnected()) {
+            throw new IllegalStateException("未連接到服務器");
+        }
+        
+        JsonMapBuffer request = new JsonMapBuffer();
+        request.put("userId", userId);
+        request.put("password", password);
+        
+        send(1, 1, request); // mainNo=1, subNo=1 登入協議
+    }
+    
+    // 發送聊天訊息
+    public void sendMessage(String content) {
+        if (!authenticated) {
+            throw new IllegalStateException("未登入");
+        }
+        
+        JsonMapBuffer request = new JsonMapBuffer();
+        request.put("content", content);
+        
+        send(2, 1, request); // mainNo=2, subNo=1 發送訊息協議
+    }
+    
+    // 獲取用戶列表
+    public void requestUserList() {
+        if (!authenticated) {
+            return;
+        }
+        
+        send(4, 1, new JsonMapBuffer()); // mainNo=4, subNo=1 獲取用戶列表
+    }
+    
+    // 處理登入回應
+    private void handleLoginResponse(JsonMessage<ChatUserHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        int code = buffer.getInteger("code");
+        
+        if (code == 1) {
+            // 登入成功
+            this.token = buffer.getString("token");
+            this.authenticated = true;
+            
+            JsonMapBuffer user = buffer.getJsonMapBuffer("user");
+            onLoginSuccess(token, user);
+            
+            logger.info("登入成功: userId={}", userId);
+        } else {
+            // 登入失敗
+            String errorMsg = buffer.getString("message");
+            onLoginFailed(errorMsg);
+            
+            logger.error("登入失敗: {}", errorMsg);
+        }
+    }
+    
+    // 處理聊天訊息
+    private void handleChatMessage(JsonMessage<ChatUserHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        
+        String senderId = buffer.getString("userId");
+        String senderName = buffer.getString("userName");
+        String content = buffer.getString("content");
+        long timestamp = buffer.getLong("timestamp");
+        String messageType = buffer.getString("messageType");
+        
+        onChatMessage(senderId, senderName, content, new Date(timestamp), messageType);
+    }
+    
+    // 處理聊天記錄
+    private void handleChatHistory(JsonMessage<ChatUserHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        List<JsonMapBuffer> messages = buffer.getJsonMapBufferList("messages");
+        
+        onChatHistory(messages);
+    }
+    
+    // 處理用戶列表更新
+    private void handleUserListUpdate(JsonMessage<ChatUserHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        List<JsonMapBuffer> users = buffer.getJsonMapBufferList("users");
+        
+        onUserListUpdate(users);
+    }
+    
+    // 處理系統通知
+    private void handleSystemNotification(JsonMessage<ChatUserHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        String notificationMsg = buffer.getString("content");
+        long timestamp = buffer.getLong("timestamp");
+        
+        onSystemNotification(notificationMsg, new Date(timestamp));
+    }
+    
+    // 回調方法（子類可重寫）
+    protected void onLoginSuccess(String token, JsonMapBuffer user) {
+        // 登入成功處理
+    }
+    
+    protected void onLoginFailed(String errorMessage) {
+        // 登入失敗處理
+    }
+    
+    protected void onChatMessage(String senderId, String senderName, String content, Date timestamp, String messageType) {
+        // 聊天訊息處理
+    }
+    
+    protected void onChatHistory(List<JsonMapBuffer> messages) {
+        // 聊天記錄處理
+    }
+    
+    protected void onUserListUpdate(List<JsonMapBuffer> users) {
+        // 用戶列表更新處理
+    }
+    
+    protected void onSystemNotification(String message, Date timestamp) {
+        // 系統通知處理
+    }
+    
+    @Override
+    public void onConnected(long connectorId) {
+        super.onConnected(connectorId);
+        logger.info("連接到聊天服務器成功");
+    }
+    
+    @Override
+    public void onDisconnected(long connectorId, ChannelHandlerContext ctx) {
+        super.onDisconnected(connectorId, ctx);
+        this.authenticated = false;
+        logger.info("與聊天服務器斷開連接");
     }
 }
 ```
@@ -1418,9 +1577,10 @@ public class ResourceManagementBestPractices {
 *讓 Socket 客戶端開發變得簡單而可靠*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月4日  
+> **最後更新**: 2025年9月13日  
 > **Java版本**: OpenJDK 21+  
 > **技術棧**: Netty 4.1.115 + SocketIO Core
+> **新增功能**: JsonSocket聊天客戶端 + WebSocket支援
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
 [![GitHub Forks](https://img.shields.io/github/forks/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)

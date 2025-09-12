@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
+import com.vscodelife.socketio.buffer.JsonMapBuffer;
 import com.vscodelife.socketio.constant.ProtocolId;
 import com.vscodelife.socketio.message.JsonMessage;
 import com.vscodelife.socketio.message.base.HeaderBase;
@@ -16,7 +17,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
-public abstract class JsonSocket<H extends HeaderBase> extends SocketBase<H, JsonMessage<H>, String> {
+public abstract class JsonSocket<H extends HeaderBase> extends SocketBase<H, JsonMessage<H>, JsonMapBuffer> {
     protected final ScheduledExecutorService scheduledThread = Executors
             .newSingleThreadScheduledExecutor(ExecutorUtil.makeName("clientsocketschedulepool"));
 
@@ -171,7 +172,7 @@ public abstract class JsonSocket<H extends HeaderBase> extends SocketBase<H, Jso
             try {
                 if (isConnected()) {
                     pingSend = System.currentTimeMillis();
-                    send(ProtocolId.PING, "");
+                    send(ProtocolId.PING, new JsonMapBuffer());
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage());
