@@ -1,23 +1,21 @@
 package com.vscodelife.serversocket.connection;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vscodelife.socketio.buffer.JsonMapBuffer;
 import com.vscodelife.socketio.connection.IConnection;
 import com.vscodelife.socketio.constant.ProtocolId;
 import com.vscodelife.socketio.util.DateUtil;
-import com.vscodelife.socketio.util.JsonUtil;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-public abstract class JsonConnection implements IConnection<String> {
+public abstract class JsonConnection implements IConnection<JsonMapBuffer> {
     protected static final Logger logger = LoggerFactory.getLogger(JsonConnection.class);
 
     protected Channel channel;
@@ -147,7 +145,7 @@ public abstract class JsonConnection implements IConnection<String> {
 
     @Override
     public void disconnect() {
-        send(ProtocolId.DISCONNECT, "");
+        send(ProtocolId.DISCONNECT, new JsonMapBuffer());
 
         if (channel != null) {
             channel.close();
@@ -166,14 +164,14 @@ public abstract class JsonConnection implements IConnection<String> {
 
     @Override
     public void sendServerBusyMessage(int mainNo, int subNo, long requestId) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("code", 503);
-        params.put("message", "server is busy");
-        send(mainNo, subNo, requestId, JsonUtil.toJson(params));
+        JsonMapBuffer buffer = new JsonMapBuffer();
+        buffer.put("code", 503);
+        buffer.put("message", "server is busy");
+        send(mainNo, subNo, requestId, buffer);
     }
 
     @Override
-    public void send(int mainNo, int subNo, String buffer) {
+    public void send(int mainNo, int subNo, JsonMapBuffer buffer) {
         send(mainNo, subNo, 0L, buffer);
     }
 }

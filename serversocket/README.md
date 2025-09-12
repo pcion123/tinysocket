@@ -8,10 +8,11 @@ ServerSocket 模組實現了 TinySocket 框架的服務器端核心功能，包�
 
 - **🚀 高性能 Socket 服務器**: 基於 Netty 4.1.115 的異步 I/O 架構
 - **🔧 泛型設計架構**: 完整的泛型約束確保類型安全
-- **📨 多協議支援**: ByteSocket（二進制）和 JsonSocket（JSON）
+- **📨 多協議支援**: ByteSocket（二進制）和 JsonSocket（JSON，含WebSocket支援）
 - **⚙️ 組件化系統**: 限流器、協議處理器、連接管理等可插拔組件
 - **🌐 Spring Boot 整合**: 無縫整合 Spring Boot 生態系統
 - **🔍 註解驅動開發**: 使用 @ProtocolTag 自動註冊協議處理器
+- **💬 實戰應用**: 包含完整的聊天服務器實現示例
 
 ### 🎯 設計理念
 
@@ -294,7 +295,7 @@ public final class GameProtocol {
 
 ### 3. JsonSocket JSON 服務器
 
-JsonSocket 提供便於調試和跨語言通信的 JSON 協議支援：
+JsonSocket 提供便於調試和跨語言通信的 JSON 協議支援，特別適用於Web應用和聊天系統：
 
 ```java
 public class ApiServer extends JsonSocket<ApiHeader, ApiConnection> {
@@ -859,6 +860,69 @@ public class ChatServerApplication {
 }
 ```
 
+### 完整聊天服務器示例（基於demo實現）
+
+基於實際的聊天系統實現，展示JsonSocket在實戰中的應用：
+
+```java
+// 聊天服務器實現
+public class ChatWebServer extends JsonSocket<ChatUserHeader, ChatUserConnection> {
+    private static final Logger logger = LoggerFactory.getLogger(ChatWebServer.class);
+
+    public ChatWebServer(int port, int maxConnectionLimit) {
+        super(logger, port, maxConnectionLimit, ChatInitializer.class);
+
+        // 設置協議處理器
+        ChatProtocol.server = this;
+
+        // 註冊協議處理器
+        int protocolCount = protocolRegister.scanAndRegisterProtocols(ChatProtocol.class);
+        logger.info("註冊協議數量: {}", protocolCount);
+    }
+
+    @Override
+    protected Class<ChatUserConnection> getConnectionClass() {
+        return ChatUserConnection.class;
+    }
+
+    @Override
+    public String getVersion() {
+        return "0.0.1";
+    }
+
+    @Override
+    public void onConnect(long sessionId) {
+        logger.debug("聊天用戶連接: sessionId={}", sessionId);
+    }
+
+    @Override
+    public void onDisconnect(long sessionId) {
+        logger.debug("聊天用戶斷開: sessionId={}", sessionId);
+        
+        // 處理用戶下線邏輯
+        ChatUserConnection connection = getConnection(sessionId);
+        if (connection != null) {
+            String userId = connection.getUserId();
+            if (userId != null) {
+                // 發送下線通知
+                ChatManager.getInstance().userOfflineWithMessage(userId);
+                
+                // 廣播用戶列表更新
+                broadcastUserListUpdate();
+            }
+        }
+    }
+    
+    // 廣播用戶列表更新
+    public void broadcastUserListUpdate() {
+        List<User> onlineUsers = ChatManager.getInstance().getAllOnlineUsers();
+        JsonMapBuffer buffer = new JsonMapBuffer();
+        buffer.put("users", onlineUsers);
+        broadcast(3, 1, buffer); // mainNo=3, subNo=1 表示用戶列表更新
+    }
+}
+```
+
 ## 🔧 配置管理
 
 ### 性能調優配置
@@ -1217,9 +1281,10 @@ public void broadcastToRoom(String roomId, ByteArrayBuffer message) {
 *讓高性能 Socket 服務器開發變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月4日  
+> **最後更新**: 2025年9月13日  
 > **Java版本**: OpenJDK 21+  
 > **技術棧**: Netty 4.1.115 + Spring Boot 3.5.4 + FastJSON 2.0.52
+> **新增功能**: JsonSocket聊天服務器 + 完整業務示例
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
 [![GitHub Forks](https://img.shields.io/github/forks/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)

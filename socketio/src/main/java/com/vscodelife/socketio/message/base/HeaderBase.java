@@ -19,6 +19,7 @@ public class HeaderBase {
     @JSONField(serialize = false, deserialize = false)
     protected long rcvTimestamp;
 
+    @JSONField(serialize = false)
     public ProtocolKey getProtocolKey() {
         return new ProtocolKey(mainNo, subNo);
     }

@@ -45,17 +45,21 @@ public class ByteInitializer extends ChannelInitializer<SocketChannel> {
         }
         ChannelPipeline pipeline = channel.pipeline();
 
-        // 正確的 pipeline 順序：
         // 1. decoder: 將原始 ByteBuf 解碼為 ByteMessage<ByteUserHeader>
         pipeline.addLast("decoder", new ByteHeaderDecoderHandler(socket));
-        // 2. auth: 處理已解碼的認證消息 (必須在 decoder 之後，其他業務 handler 之前)
-        pipeline.addLast("auth", new ByteAuthenticationHandler(socket, authScheduler));
-        // 3. message: 處理業務消息
-        pipeline.addLast("message", new ByteMessageHandler(socket));
-        // 4. connect: 處理連接相關邏輯
+
+        // 2. connect: 處理連接相關邏輯
         pipeline.addLast("connect", new ByteConnectHandler(socket));
+
+        // 3. auth: 處理已解碼的認證消息 (必須在 decoder 之後，其他業務 handler 之前)
+        pipeline.addLast("auth", new ByteAuthenticationHandler(socket, authScheduler));
+
+        // 4. message: 處理業務消息
+        pipeline.addLast("message", new ByteMessageHandler(socket));
+
         // 5. encoder: 編碼出站消息 (處理出站消息，順序在這裡)
         pipeline.addLast("encoder", new ByteHeaderEncoderHandler(socket));
+
         logger.info("client {} is connected", channel.remoteAddress());
     }
 }

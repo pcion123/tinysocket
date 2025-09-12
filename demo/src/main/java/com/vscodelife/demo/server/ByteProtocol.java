@@ -60,8 +60,6 @@ public final class ByteProtocol {
         String userId = message.getHeader().getUserId();
         logger.info("sessionId={} requestId={} rcv client offline request, content={}", sessionId, requestId);
         //
-        User user = UserManager.getInstance().getUser(userId);
-        //
         ChatMessage msg = ChatManager.getInstance().userOfflineWithMessage(userId);
         // 回應用戶信息
         ByteArrayBuffer response = new ByteArrayBuffer();
@@ -74,11 +72,11 @@ public final class ByteProtocol {
         server.broadcast(ProtocolId.MESSAGE, broadcastMsg);
     }
 
-    @ProtocolTag(mainNo = 1, subNo = 3, cached = true, safed = true, describe = "getUserList")
+    @ProtocolTag(mainNo = 1, subNo = 3, cached = true, safed = true, describe = "get user list")
     public static void getUserList(ByteMessage<ByteUserHeader> message) {
         long sessionId = message.getHeader().getSessionId();
         long requestId = message.getHeader().getRequestId();
-        logger.info("sessionId={} requestId={} rcv client getUserList request", sessionId, requestId);
+        logger.info("sessionId={} requestId={} rcv client get user list request", sessionId, requestId);
         //
         List<User> users = ChatManager.getInstance().getAllOnlineUsers();
         // 回應用戶信息
@@ -89,15 +87,36 @@ public final class ByteProtocol {
         server.send(sessionId, message.getHeader().getProtocolKey(), requestId, response);
     }
 
-    @ProtocolTag(mainNo = 1, subNo = 4, cached = true, safed = true, describe = "say")
+    @ProtocolTag(mainNo = 1, subNo = 4, cached = true, safed = true, describe = "get user info")
+    public static void getUserInfo(ByteMessage<ByteUserHeader> message) {
+        long sessionId = message.getHeader().getSessionId();
+        long requestId = message.getHeader().getRequestId();
+        String targetId = message.getBuffer().readString();
+        logger.info("sessionId={} requestId={} rcv client get user info request, targetId={}", sessionId, requestId,
+                targetId);
+        //
+        User user = ChatManager.getInstance().getUser(targetId);
+        if (user == null) {
+            ByteArrayBuffer response = new ByteArrayBuffer();
+            response.writeInt(404);
+            response.writeString("user not found");
+            server.send(sessionId, message.getHeader().getProtocolKey(), requestId, response);
+        } else {
+            ByteArrayBuffer response = new ByteArrayBuffer();
+            response.writeInt(200);
+            response.writeString("success");
+            response.writeStruct(user);
+            server.send(sessionId, message.getHeader().getProtocolKey(), requestId, response);
+        }
+    }
+
+    @ProtocolTag(mainNo = 1, subNo = 5, cached = true, safed = true, describe = "say")
     public static void say(ByteMessage<ByteUserHeader> message) {
         long sessionId = message.getHeader().getSessionId();
         long requestId = message.getHeader().getRequestId();
         String userId = message.getHeader().getUserId();
         String content = message.getBuffer().readString();
         logger.info("sessionId={} requestId={} rcv client say request, content={}", sessionId, requestId, content);
-        //
-        User user = UserManager.getInstance().getUser(userId);
         //
         ChatMessage msg = ChatManager.getInstance().addMessage(userId, content);
         // 回應用戶信息
