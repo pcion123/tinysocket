@@ -168,6 +168,7 @@
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <excludeScope>provided</excludeScope>
+                            <excludeGroupIds>com.vscodelife</excludeGroupIds>
                         </configuration>
                     </execution>
                 </executions>

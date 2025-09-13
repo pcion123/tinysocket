@@ -19,7 +19,7 @@
             </includes>
         </fileSet>
         
-        <!-- Include all dependencies -->
+        <!-- Include all external dependencies -->
         <fileSet>
             <directory>${project.build.directory}/lib</directory>
             <outputDirectory>/lib</outputDirectory>
@@ -41,4 +41,16 @@
             </includes>
         </fileSet>
     </fileSets>
+    
+    <!-- Include project module dependencies -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+            <includes>
+                <include>com.vscodelife:socketio</include>
+                <include>com.vscodelife:serversocket</include>
+                <include>com.vscodelife:clientsocket</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
 </assembly>
