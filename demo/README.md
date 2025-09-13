@@ -173,7 +173,7 @@ demo-0.0.1-SNAPSHOT/
 
 ### 方式一：傳統 ByteSocket 演示
 
-<img src="assets/bytedemo.webp" alt="console demo" width="50%" />
+<img src="assets/bytedemo.webp" alt="console demo" width="70%" />
 
 **🎬 演示說明**：上面的截圖展示了 TinySocket ByteSocket 二進制通信系統的完整功能，包括：
 - 🔐 **用戶認證**: 基於用戶名密碼的登入驗證機制
