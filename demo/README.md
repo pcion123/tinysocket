@@ -173,7 +173,7 @@ demo-0.0.1-SNAPSHOT/
 
 ### 方式一：傳統 ByteSocket 演示
 
-<img src="assets/bytedemo.webp" alt="console demo" width="70%" />
+<img src="assets/bytedemo.webp" alt="console demo" width="80%" />
 
 **🎬 演示說明**：上面的截圖展示了 TinySocket ByteSocket 二進制通信系統的完整功能，包括：
 - 🔐 **用戶認證**: 基於用戶名密碼的登入驗證機制
@@ -214,9 +214,9 @@ demo-0.0.1-SNAPSHOT/
 
 ### 方式二：Web 聊天系統演示
 
-<img src="assets/chatdemo.gif" alt="web demo" width="50%" />
+<img src="assets/chatdemo.webp" alt="web demo" width="50%" />
 
-**🎬 演示說明**：上面的 GIF 展示了 TinySocket Web 聊天室的完整功能，包括：
+**🎬 演示說明**：上面的截圖展示了 展示了 TinySocket Web 聊天室的完整功能，包括：
 - 💬 **實時聊天**: 多用戶即時消息傳遞
 - 🔗 **自動連接**: WebSocket 連接建立和狀態顯示  
 - 👥 **用戶管理**: 在線用戶數量實時更新
