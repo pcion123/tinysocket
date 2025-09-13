@@ -39,17 +39,20 @@ clientsocket/
 │   │   ├── 泛型約束: <H, M, B>
 │   │   ├── 連接管理: Connector
 │   │   ├── 訊息處理: messageQueue
-│   │   ├── 協議註冊: processMap
+│   │   ├── 協議註冊: protocolRegister
 │   │   └── ID 生成: SnowflakeGenerator
-│   ├── ByteSocket.java                # 二進制 Socket 客戶端
-│   │   ├── 繼承: SocketBase<HeaderBase, ByteMessage<HeaderBase, ByteArrayBuffer>, ByteArrayBuffer>
-│   │   ├── 自動重連: AutoReconnect
-│   │   ├── 心跳機制: Ping
-│   │   └── 快取管理: ByteCache
-│   ├── JsonSocket.java                # JSON Socket 客戶端
-│   │   ├── 繼承: SocketBase<HeaderBase, JsonMessage<HeaderBase, JsonObject>, JsonObject>
-│   │   ├── JSON 處理: 自動序列化
-│   │   └── 快取管理: JsonCache
+│   ├── ByteSocket.java                # 二進制 Socket 客戶端（抽象類）
+│   │   ├── 繼承: SocketBase<H, ByteMessage<H>, ByteArrayBuffer>
+│   │   ├── 泛型約束: <H extends HeaderBase>
+│   │   ├── 自動重連: autoReconnect 機制
+│   │   ├── 心跳機制: Ping 保活機制
+│   │   └── 調度器: scheduledThread
+│   ├── JsonSocket.java                # JSON Socket 客戶端（抽象類）
+│   │   ├── 繼承: SocketBase<H, JsonMessage<H>, JsonMapBuffer>
+│   │   ├── 泛型約束: <H extends HeaderBase>
+│   │   ├── 自動重連: autoReconnect 機制
+│   │   ├── 心跳機制: Ping 保活機制
+│   │   └── 調度器: scheduledThread
 │   ├── IClient.java                   # 客戶端接口定義
 │   │   ├── 連接管理: connect/disconnect
 │   │   ├── 訊息發送: send 方法族
@@ -61,10 +64,14 @@ clientsocket/
 │   │   ├── 心跳機制: 定時心跳檢測
 │   │   └── 狀態監控: 連接狀態追蹤
 │   └── component/                     # 組件系統
-│       └── ProtocolCatcher.java       # 協議異常捕獲器
-│           ├── 異常處理包裝
-│           ├── 錯誤日誌記錄
-│           └── 優雅降級處理
+│       ├── ProtocolCatcher.java       # 協議異常捕獲器
+│       │   ├── 異常處理包裝
+│       │   ├── 錯誤日誌記錄
+│       │   └── 優雅降級處理
+│       └── ProtocolRegister.java      # 協議註冊器
+│           ├── 協議處理器映射
+│           ├── 類型安全處理
+│           └── 消費者函數管理
 ```
 
 ### 架構層次說明

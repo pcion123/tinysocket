@@ -47,6 +47,7 @@ demo/
 │   │   │   ├── entity/                      # 實體類
 │   │   │   │   ├── User.java                    # 用戶實體類
 │   │   │   │   └── ChatMessage.java             # 聊天訊息實體
+│   │   │   ├── exception/                   # 異常處理
 │   │   │   ├── server/                      # 服務器端實現（二進制）
 │   │   │   │   ├── TestByteServer.java          # 測試服務器
 │   │   │   │   ├── ByteUserHeader.java          # 自定義 Header
@@ -56,9 +57,12 @@ demo/
 │   │   │   │   ├── component/                   # 服務器組件
 │   │   │   │   │   ├── UserManager.java             # 用戶管理器
 │   │   │   │   │   └── ChatManager.java             # 聊天管理器
-│   │   │   │   ├── exception/                   # 異常處理
 │   │   │   │   └── handler/                     # 服務器處理器
-│   │   │   │       └── ByteMessageHandler.java      # 訊息處理器
+│   │   │   │       ├── ByteAuthenticationHandler.java # 認證處理器
+│   │   │   │       ├── ByteConnectHandler.java      # 連接處理器
+│   │   │   │       ├── ByteMessageHandler.java      # 訊息處理器
+│   │   │   │       ├── ByteHeaderDecoderHandler.java # Header解碼器
+│   │   │   │       └── ByteHeaderEncoderHandler.java # Header編碼器
 │   │   │   ├── webserver/                   # Web服務器端實現（JSON）
 │   │   │   │   ├── ChatWebServer.java           # JSON聊天服務器
 │   │   │   │   ├── ChatUserHeader.java          # 聊天用戶Header
@@ -69,7 +73,14 @@ demo/
 │   │   │   │   │   ├── ChatManager.java             # 聊天管理器
 │   │   │   │   │   └── UserManager.java             # 用戶管理器
 │   │   │   │   ├── handler/                     # Web處理器
+│   │   │   │   │   ├── ChatAuthenticationHandler.java # 聊天認證處理器
+│   │   │   │   │   ├── ChatConnectHandler.java      # 聊天連接處理器
+│   │   │   │   │   ├── ChatMessageHandler.java      # 聊天訊息處理器
+│   │   │   │   │   ├── ChatHeaderDecoderHandler.java # 聊天Header解碼器
+│   │   │   │   │   ├── ChatHeaderEncoderHandler.java # 聊天Header編碼器
+│   │   │   │   │   └── ChatWebSocketHandshakeHandler.java # WebSocket握手處理器
 │   │   │   │   └── util/                        # Web工具類
+│   │   │   │       └── TokenUtil.java               # Token工具類
 │   │   │   └── client/                      # 客戶端實現
 │   │   │       ├── TestByteClient.java          # 測試客戶端
 │   │   │       ├── ByteUserHeader.java          # 客戶端 Header
@@ -82,16 +93,19 @@ demo/
 │   │   │           ├── ByteMessageHandler.java      # 訊息處理器
 │   │   │           ├── ByteHeaderDecoderHandler.java # Header解碼器
 │   │   │           └── ByteHeaderEncoderHandler.java # Header編碼器
-│   │   └── resources/
-│   │       └── application.yml              # Spring Boot 配置
+│   │   ├── assembly/                        # 打包配置
+│   │   ├── resources/                       # 資源檔案
+│   │   │   └── application.yml                  # Spring Boot 配置
+│   │   └── run/                             # 運行腳本
+│   └── test/
+│       └── java/com/vscodelife/demo/test/
+│           └── Test.java                    # 測試類
 ├── chatjs/                                  # Web聊天室前端
 │   ├── index.html                           # 聊天室首頁
 │   ├── chat-client.js                       # 聊天客戶端邏輯
 │   ├── app.js                               # 應用主邏輯
 │   └── styles.css                           # 樣式表
-│   └── test/
-│       └── java/com/vscodelife/demo/test/
-│           └── Test.java                    # 測試類
+├── assets/                                  # 資源檔案
 └── pom.xml                                  # Maven 配置
 ```
 
@@ -261,19 +275,15 @@ demo-0.0.1-SNAPSHOT/
 - **[API 參考文檔](https://docs.tinysocket.vscodelife.com)**: 完整的 API 文檔
 - **[最佳實踐指南](https://docs.tinysocket.vscodelife.com/best-practices)**: 生產環境使用建議
 
-## 📞 聯繫方式
-
-- **專案主頁**: https://github.com/vscodelife/tinysocket
-- **問題反饋**: https://github.com/vscodelife/tinysocket/issues
-- **討論社區**: https://github.com/vscodelife/tinysocket/discussions
-
 ---
 
-*TinySocket Demo - 學習 TinySocket 框架的最佳起點！*
+**由 vscodelife 團隊精心打造** ❤️  
+*讓 TinySocket 框架學習變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月4日  
+> **最後更新**: 2025年9月14日  
 > **Java版本**: OpenJDK 21+  
+> **技術棧**: Netty 4.1.115 + Spring Boot 3.5.4 + FastJSON 2.0.52
 > **示例類型**: 完整的客戶端-服務器通信演示
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)

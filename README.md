@@ -1,951 +1,339 @@
 # TinySocket 高性能網絡通信框架
 
-TinySocket 是一個基於 Netty 的高性能、模組化網絡通信框架，提供完整的 Socket 通信解決方案。採用現代化的 Java 21 技術棧，結合 Spring Boot 3.x 生態系統，為企業級應用提供生產就緒的網絡通信基礎設施。
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21+-blue.svg" alt="Java Version">
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.5.4-green.svg" alt="Spring Boot Version">
+  <img src="https://img.shields.io/badge/Netty-4.1.115-orange.svg" alt="Netty Version">
+  <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License">
+</p>
 
-## 🏗️ 專案架構
+TinySocket 是一款基於 **Java 21** 和 **Netty 4.1.115** 構建的現代化、高性能網絡通信框架。它提供了完整的客戶端-服務器通信解決方案，支援**二進制**和 **JSON** 雙重通信協議，採用**泛型設計**和**註解驅動**開發模式，為企業級應用提供生產就緒的Socket通信基礎設施。
 
-TinySocket 採用 Maven 多模組架構設計，由四個核心模組組成，形成完整的網絡通信生態系統：
+## 🌟 核心特性
+
+### 🚀 高性能設計
+- **零拷貝緩衝區**: 基於 Netty 的高效內存管理，減少 GC 壓力
+- **異步 I/O**: 支援高並發連接，單機可處理數萬連接
+- **智能快取**: 內建訊息快取和連接池管理
+- **性能監控**: 內建 ProfilerUtil 實時性能分析
+
+### 🔧 現代化架構
+- **泛型設計**: 完整的泛型約束確保類型安全
+- **註解驅動**: 使用 `@ProtocolTag` 和 `@MessageTag` 簡化開發
+- **組件化**: 可插拔的限流器、協議處理器等組件
+- **Spring Boot 整合**: 無縫整合 Spring Boot 生態系統
+
+### 📨 雙協議支援
+- **ByteSocket**: 高效二進制通信，適用於遊戲、IoT等高性能場景
+- **JsonSocket**: JSON 通信協議，適用於 Web API、微服務等場景
+- **WebSocket 支援**: 原生支援 WebSocket 協議
+- **協議混合**: 同時支援兩種協議的混合使用
+
+### 🛠️ 開發友好
+- **豐富工具類**: JSON處理、JWT認證、HTTP客戶端、日期工具等
+- **完整示例**: 包含聊天系統、遊戲服務器等完整示例
+- **詳細文檔**: 每個模組都有詳細的API文檔和使用指南
+- **測試覆蓋**: 完整的單元測試和整合測試
+
+## 🏗️ 模組架構
+
+TinySocket 框架採用模組化設計，由四個核心模組組成：
 
 ```
-tinysocket/
-├── pom/                   # Maven 父專案配置 📦
-│   └── pom.xml           # 統一依賴管理，技術棧版本控制
-├── socketio/             # 核心通信庫 ⭐
-│   ├── src/main/java/com/vscodelife/socketio/
-│   │   ├── annotation/   # 註解系統
-│   │   │   ├── MessageTag.java    # 序列化註解
-│   │   │   └── ProtocolTag.java   # 協議處理註解
-│   │   ├── buffer/       # 高性能緩衝區系統
-│   │   │   └── ByteArrayBuffer.java # 零拷貝緩衝區
-│   │   ├── connection/   # 連接管理接口
-│   │   │   └── IConnection.java   # 通用連接接口
-│   │   ├── constant/     # 協議常數定義
-│   │   │   └── ProtocolId.java    # 內建協議ID
-│   │   ├── message/      # 結構化訊息系統
-│   │   │   ├── ByteMessage.java   # 二進制訊息
-│   │   │   ├── JsonMessage.java   # JSON訊息
-│   │   │   ├── ByteCache.java     # 二進制訊息快取
-│   │   │   ├── JsonCache.java     # JSON訊息快取
-│   │   │   └── base/              # 訊息基礎類
-│   │   │       ├── HeaderBase.java    # 訊息頭基類
-│   │   │       ├── MessageBase.java   # 訊息基類
-│   │   │       ├── CacheBase.java     # 快取基類
-│   │   │       ├── ProtocolKey.java   # 協議鍵
-│   │   │       └── ProtocolReg.java   # 協議註冊
-│   │   └── util/         # 工具類庫
-│   │       ├── JsonUtil.java          # JSON 處理
-│   │       ├── SnowflakeUtil.java     # 分散式ID
-│   │       ├── DateUtil.java          # 日期處理
-│   │       ├── NettyUtil.java         # Netty 工具
-│   │       ├── JwtUtil.java           # JWT 工具
-│   │       ├── Base64Util.java        # Base64 工具
-│   │       ├── ExecutorUtil.java      # 執行緒池工具
-│   │       ├── profiler/              # 性能分析
-│   │       │   ├── ProfilerUtil.java      # 性能分析工具
-│   │       │   ├── ProfilerCounter.java   # 計數器
-│   │       │   ├── ProfilerConfig.java    # 配置
-│   │       │   └── ProfilerCounterManager.java # 管理器
-│   │       └── http/                  # HTTP 工具
-│   │           ├── HttpUtil.java          # HTTP 客戶端
-│   │           └── HttpResponse.java      # HTTP 回應
-│   └── pom.xml
-├── serversocket/         # 服務器端 Socket 實現 🚀
-│   ├── src/main/java/com/vscodelife/serversocket/
-│   │   ├── SocketBase.java            # Socket 服務器基類（泛型設計）
-│   │   ├── ByteSocket.java            # 二進制 Socket 服務器
-│   │   ├── JsonSocket.java            # JSON Socket 服務器
-│   │   ├── component/                 # 組件系統
-│   │   │   ├── RateLimiter.java           # 限流器組件
-│   │   │   ├── ProtocolCatcher.java       # 協議異常捕獲器
-│   │   │   └── ProtocolRegister.java      # 協議註冊器
-│   │   └── connection/                # 連接管理實現
-│   │       ├── ByteConnection.java        # 二進制連接
-│   │       └── JsonConnection.java        # JSON 連接
-│   └── pom.xml
-├── clientsocket/         # 客戶端 Socket 實現 🔗
-│   ├── src/main/java/com/vscodelife/clientsocket/
-│   │   ├── SocketBase.java            # Socket 客戶端基類（泛型設計）
-│   │   ├── ByteSocket.java            # 二進制 Socket 客戶端
-│   │   ├── JsonSocket.java            # JSON Socket 客戶端
-│   │   ├── IClient.java               # 客戶端接口定義
-│   │   ├── Connector.java             # 連接器實現
-│   │   └── component/                 # 組件系統
-│   │       └── ProtocolCatcher.java       # 協議異常捕獲器
-│   └── pom.xml
-├── demo/                 # 完整示範應用 🎯
-│   ├── src/main/java/com/vscodelife/demo/
-│   │   ├── DemoByteServer.java        # 二進制服務器啟動示例
-│   │   ├── DemoByteClient.java        # 客戶端啟動示例
-│   │   ├── DemoChatServer.java        # 聊天服務器啟動示例
-│   │   ├── entity/                    # 實體類
-│   │   │   ├── User.java                  # 用戶實體類
-│   │   │   └── ChatMessage.java          # 聊天訊息實體類
-│   │   ├── server/                    # 服務器端完整實現（二進制）
-│   │   │   ├── TestByteServer.java        # 測試服務器
-│   │   │   ├── ByteUserHeader.java        # 自定義 Header
-│   │   │   ├── ByteUserConnection.java    # 自定義 Connection
-│   │   │   ├── ByteInitializer.java       # Netty 初始化器
-│   │   │   ├── ByteProtocol.java          # 協議處理器（註解驅動）
-│   │   │   ├── component/             # 服務器組件
-│   │   │   │   ├── ChatManager.java       # 聊天管理器
-│   │   │   │   └── UserManager.java       # 用戶管理器
-│   │   │   ├── exception/             # 異常處理
-│   │   │   └── handler/               # 服務器處理器
-│   │   │       └── ByteMessageHandler.java # 訊息處理器
-│   │   ├── webserver/                 # Web服務器端實現（JSON聊天）
-│   │   │   ├── ChatWebServer.java         # JSON聊天服務器
-│   │   │   ├── ChatUserHeader.java        # 聊天用戶Header
-│   │   │   ├── ChatUserConnection.java    # 聊天用戶連接
-│   │   │   ├── ChatInitializer.java       # 聊天初始化器
-│   │   │   ├── ChatProtocol.java          # 聊天協議處理器
-│   │   │   ├── component/             # Web服務器組件
-│   │   │   │   ├── ChatManager.java       # 聊天管理器
-│   │   │   │   └── UserManager.java       # 用戶管理器
-│   │   │   ├── handler/               # Web處理器
-│   │   │   └── util/                  # Web工具類
-│   │   └── client/                    # 客戶端完整實現
-│   │       ├── TestByteClient.java        # 測試客戶端
-│   │       ├── ByteUserHeader.java        # 客戶端 Header
-│   │       ├── ByteInitializer.java       # 客戶端初始化器
-│   │       ├── ByteProtocol.java          # 客戶端協議處理
-│   │       └── handler/               # 客戶端處理器
-│   │           ├── ByteConnectHandler.java
-│   │           ├── ByteHeaderDecoderHandler.java
-│   │           └── ByteHeaderEncoderHandler.java
-│   ├── chatjs/                        # Web聊天客戶端
-│   │   ├── index.html                     # 聊天室首頁
-│   │   ├── chat-client.js                # 聊天客戶端邏輯
-│   │   ├── app.js                         # 應用主邏輯
-│   │   └── styles.css                     # 樣式表
-│   └── pom.xml
-├── .vscode/              # VS Code 開發環境配置
-├── mvnw & mvnw.cmd      # Maven Wrapper
-└── README.md
+TinySocket Framework
+├── socketio/           # 🔧 核心通信庫
+│   ├── 雙緩衝區系統        # ByteArrayBuffer + JsonMapBuffer
+│   ├── 註解驅動開發        # @ProtocolTag + @MessageTag
+│   ├── 豐富工具類庫        # JSON/JWT/HTTP/Date 工具
+│   └── 協議處理系統        # 協議註冊、快取管理、異常處理
+├── serversocket/       # 🚀 服務器端實現
+│   ├── SocketBase 泛型基類  # 完整的泛型約束設計
+│   ├── ByteSocket 服務器    # 高性能二進制通信
+│   ├── JsonSocket 服務器    # JSON + WebSocket 支援
+│   └── 組件化系統          # 限流器、協議捕獲器、連接管理
+├── clientsocket/       # 🔗 客戶端實現
+│   ├── 自動重連機制        # 智能重連策略
+│   ├── 心跳保持           # 連接活性檢測
+│   ├── 訊息快取           # 離線訊息重發
+│   └── 多協議支援          # ByteSocket + JsonSocket
+└── demo/              # 📚 完整示例集合
+    ├── 二進制通信演示       # 遊戲風格的高性能通信
+    ├── Web聊天系統        # 現代化聊天室實現
+    ├── Spring Boot整合    # 完整的企業級配置
+    └── 打包部署方案        # 生產環境部署指南
 ```
-
-### 🎯 設計理念
-
-- **高性能**: 基於Netty NIO，支援高並發場景，零拷貝緩衝區設計
-- **模組化**: 清晰的模組邊界，核心庫與實現分離，易於擴展維護  
-- **類型安全**: 完整的泛型支援和運行時檢查，編譯期錯誤發現
-- **開發友好**: 豐富的工具類、詳細的錯誤信息、完整的IDE支援
-- **生產就緒**: 內建性能監控、限流保護、連接管理
-
-## 🚀 核心特性
-
-### 🔧 SocketIO 核心庫 (v0.0.1-SNAPSHOT)
-
-作為整個框架的基石，socketio模組提供：
-
-#### 💾 高性能緩衝區管理
-- **ByteArrayBuffer**: 可重用、零拷貝的位元組緩衝區，類似Netty ByteBuf API
-- **雙字節序支援**: Big-Endian（網絡字節序）& Little-Endian（本地字節序）
-- **智能擴容**: 自動記憶體管理，避免頻繁分配，提升性能
-- **類型安全**: 支援所有Java基本類型和複雜對象的序列化
-
-#### 📨 結構化訊息系統
-- **@MessageTag註解**: 基於註解的自動序列化/反序列化系統
-- **多格式支援**: ByteMessage（二進制）、JsonMessage（JSON）、自定義格式
-- **版本相容**: 向前/向後相容的協議設計，支援平滑升級
-- **消息快取**: 智能的消息緩存管理，減少GC壓力
-
-#### 🛠️ 豐富工具類庫
-- **JsonUtil**: FastJSON 2.x高性能JSON處理，支援null值安全
-- **SnowflakeUtil**: 分散式唯一ID生成器，支援集群部署
-- **ProfilerUtil**: 內建性能分析工具，支援多維度性能監控
-- **DateUtil**: Joda-Time日期時間處理，提供強大的時間操作
-- **HttpUtil**: HTTP客戶端封裝，簡化HTTP請求操作
-- **ExecutorUtil**: 線程池管理工具，支援命名和監控
-
-### 🚀 ServerSocket 服務器模組 (v0.0.1-SNAPSHOT)
-
-基於socketio核心庫實現的服務器端解決方案：
-
-#### 🔌 高性能Socket服務器
-- **ByteSocket**: 二進制數據Socket服務器，支援高性能位元組數據傳輸
-- **JsonSocket**: JSON格式Socket服務器，便於調試和跨語言通信，支援WebSocket協議
-- **SocketBase**: 通用Socket服務器基類，提供完整的泛型設計
-- **連接管理**: 支援大量並發連接，內建連接池和生命周期管理
-
-#### ⚙️ Spring Boot完美整合
-- **組件化設計**: 限流器(RateLimiter)、協議捕獲器(ProtocolCatcher)等可插拔組件
-- **生產就緒**: 內建健康檢查、監控指標、優雅關閉等企業級特性
-- **配置靈活**: 支援多種配置方式，包括Java Config和註解驅動
-
-### 🔗 ClientSocket 客戶端模組 (v0.0.1-SNAPSHOT)
-
-高性能、智能化的客戶端Socket解決方案：
-
-#### 🚀 智能客戶端功能
-- **ByteSocket**: 二進制數據客戶端，支援自動重連和心跳保持
-- **JsonSocket**: JSON格式客戶端，便於Web端和跨語言通信
-- **自動重連機制**: 智能的斷線重連，支援退避算法
-- **心跳保持**: 自動心跳檢測，保持連接活性
-
-#### 🔧 開發友好特性
-- **協議處理器**: 基於註解的協議自動註冊和處理
-- **錯誤處理**: 完善的異常捕獲和恢復機制
-- **性能監控**: 內建連接狀態和性能指標監控
-
-## 🛠️ 技術棧
-
-| 組件 | 版本 | 用途 |
-|------|------|------|
-| **Java** | 21 | 核心語言，支援最新特性 |
-| **Spring Boot** | 3.5.4 | 應用框架和自動配置 |
-| **Netty** | 4.1.115.Final | 高性能網絡通信引擎 |
-| **FastJSON** | 2.0.52 | 高性能JSON處理 |
-| **Joda-Time** | 2.12.7 | 強大的日期時間API |
-| **Lombok** | 1.18.30 | 代碼簡化和增強 |
-| **Maven** | 3.9+ | 專案構建和依賴管理 |
-
-## ⚡ 快速開始
-
-### 📋 環境需求
-
-- **JDK**: OpenJDK 21或更高版本
-- **Maven**: Apache Maven 3.9+  
-- **IDE**: VS Code（推薦）或IntelliJ IDEA
-
-### 🚀 安裝和構建
-
-```bash
-# 1. 克隆專案
-git clone <repository-url>
-cd tinysocket
-
-# 2. 使用Maven Wrapper構建（推薦）
-./mvnw clean compile  # Linux/macOS
-mvnw.cmd clean compile  # Windows
-
-# 3. 或使用本地Maven  
-mvn clean compile -f pom/pom.xml
-
-# 4. 單獨構建模組
-./mvnw clean compile -pl socketio     # 構建socketio模組
-./mvnw clean compile -pl serversocket # 構建serversocket模組
-```
-
-### 💡 核心API使用示例
-
-#### 高性能緩衝區操作
-```java
-import com.vscodelife.socketio.buffer.ByteArrayBuffer;
-
-// 創建可重用緩衝區
-ByteArrayBuffer buffer = new ByteArrayBuffer(1024);
-
-// 寫入不同類型的數據
-buffer.writeString("TinySocket")
-      .writeInt(2025)
-      .writeLong(System.currentTimeMillis())
-      .writeJson(userObject);
-
-// 轉換為字節數組進行網絡傳輸
-byte[] data = buffer.toByteArray();
-
-// 讀取數據
-buffer.clear().writeBytes(data);
-String framework = buffer.readString();
-int year = buffer.readInt();
-long timestamp = buffer.readLong();
-```
-
-#### 結構化訊息序列化
-```java
-import com.vscodelife.socketio.annotation.MessageTag;
-
-public class UserMessage {
-    @MessageTag(order = 1)
-    private int userId;
-    
-    @MessageTag(order = 2) 
-    private String username;
-    
-    @MessageTag(order = 3)
-    private Date loginTime;
-}
-
-// 自動序列化/反序列化
-buffer.writeStruct(userMessage);
-UserMessage received = buffer.readStruct(UserMessage.class);
-```
-
-#### Socket服務器使用（基於實際代碼）
-```java
-import com.vscodelife.serversocket.socket.ByteSocket;
-import com.vscodelife.socketio.buffer.ByteArrayBuffer;
-import com.vscodelife.socketio.connection.IConnection;
-import com.vscodelife.socketio.message.ByteMessage;
-import com.vscodelife.socketio.message.base.HeaderBase;
-
-// 繼承ByteSocket實現自定義服務器
-public class MyByteSocket extends ByteSocket<HeaderBase, IConnection<ByteArrayBuffer>> {
-    
-    public MyByteSocket(int port, int limitConnect) {
-        super(logger, port, limitConnect, MySocketInitializer.class);
-        
-        // 註冊協議處理器
-        registerProtocol(1, 1, this::handleLogin);        // 登入協議
-        registerProtocol(1, 2, this::handleLogout);       // 登出協議
-        registerProtocol(2, 1, this::handleChatMessage);  // 聊天訊息
-    }
-    
-    @Override
-    public String getVersion() {
-        return "1.0.0";
-    }
-    
-    @Override
-    protected Class<IConnection<ByteArrayBuffer>> getConnectionClass() {
-        return (Class<IConnection<ByteArrayBuffer>>) MyConnection.class;
-    }
-    
-    @Override
-    public void onConnect(long sessionId) {
-        logger.info("客戶端連接: sessionId={}", sessionId);
-    }
-    
-    @Override
-    public void onDisconnect(long sessionId) {
-        logger.info("客戶端斷開: sessionId={}", sessionId);
-    }
-    
-    private void handleLogin(ByteMessage<HeaderBase> message) {
-        HeaderBase header = message.getHeader();
-        ByteArrayBuffer buffer = message.getBuffer();
-        
-        // 處理登入邏輯
-        String username = buffer.readString();
-        String password = buffer.readString();
-        
-        // 回應登入結果
-        ByteArrayBuffer response = new ByteArrayBuffer();
-        response.writeInt(1); // 成功
-        response.writeString("登入成功");
-        
-        send(header.getSessionId(), 1, 1, header.getRequestId(), response);
-    }
-    
-    private void handleChatMessage(ByteMessage<HeaderBase> message) {
-        ByteArrayBuffer buffer = message.getBuffer();
-        String chatMsg = buffer.readString();
-        
-        // 廣播聊天訊息給所有連接
-        ByteArrayBuffer broadcast = new ByteArrayBuffer();
-        broadcast.writeString(chatMsg);
-        broadcast(2, 1, broadcast);
-    }
-}
-
-// JSON聊天服務器示例（新增功能）
-import com.vscodelife.serversocket.JsonSocket;
-import com.vscodelife.socketio.buffer.JsonMapBuffer;
-
-public class ChatWebServer extends JsonSocket<ChatUserHeader, ChatUserConnection> {
-    
-    public ChatWebServer(int port, int maxConnectionLimit) {
-        super(logger, port, maxConnectionLimit, ChatInitializer.class);
-        
-        // 設置協議處理器
-        ChatProtocol.server = this;
-        
-        // 註冊協議處理器
-        int protocolCount = protocolRegister.scanAndRegisterProtocols(ChatProtocol.class);
-    }
-    
-    @Override
-    public String getVersion() {
-        return "0.0.1";
-    }
-    
-    @Override
-    protected Class<ChatUserConnection> getConnectionClass() {
-        return ChatUserConnection.class;
-    }
-    
-    @Override
-    public void onConnect(long sessionId) {
-        logger.debug("聊天用戶連接: sessionId={}", sessionId);
-    }
-    
-    @Override
-    public void onDisconnect(long sessionId) {
-        logger.debug("聊天用戶斷開: sessionId={}", sessionId);
-        
-        // 處理用戶下線邏輯
-        ChatUserConnection connection = getConnection(sessionId);
-        if (connection != null) {
-            String userId = connection.getUserId();
-            ChatManager.getInstance().userOfflineWithMessage(userId);
-        }
-    }
-}
-
-// Spring Boot應用程式
-@SpringBootApplication
-public class SocketServerApp {
-    
-    @Bean
-    public MyByteSocket socketServer() {
-        return new MyByteSocket(8080, 1000);
-    }
-    
-    @Bean
-    public ChatWebServer chatWebServer() {
-        return new ChatWebServer(30002, 100);  // 新增聊天服務器
-    }
-    
-    @PostConstruct
-    public void startServer() {
-        socketServer().bind(); // 啟動二進制服務器
-        chatWebServer().bind(); // 啟動聊天服務器
-    }
-}
-```
-
-#### 聊天管理系統使用（新增功能）
-```java
-import com.vscodelife.demo.server.component.ChatManager;
-import com.vscodelife.demo.server.component.UserManager;
-import com.vscodelife.demo.entity.ChatMessage;
-import com.vscodelife.demo.entity.User;
-
-// 聊天管理器 - 維護聊天記錄和在線用戶
-ChatManager chatManager = ChatManager.getInstance();
-
-// 用戶上線並發送系統訊息
-User user = new User("U001", "張三", "男", 25, "工程師");
-ChatMessage onlineMsg = chatManager.userOnlineWithMessage(user);
-
-// 添加聊天訊息
-ChatMessage userMsg = chatManager.addMessage("U001", "大家好！");
-
-// 用戶下線並發送系統訊息
-ChatMessage offlineMsg = chatManager.userOfflineWithMessage("U001");
-
-// 獲取聊天記錄
-List<ChatMessage> messages = chatManager.getAllMessages();
-
-// 獲取在線用戶
-List<User> onlineUsers = chatManager.getAllOnlineUsers();
-int userCount = chatManager.getOnlineUserCount();
-
-// 打印統計信息
-String stats = chatManager.getStatistics();
-System.out.println(stats);
-```
-
-#### Web聊天室前端集成（JavaScript客戶端）
-```javascript
-// 基於WebSocket的聊天客戶端
-class TinySocketChatClient {
-    constructor(serverUrl) {
-        this.serverUrl = serverUrl;
-        this.websocket = null;
-        this.sessionId = null;
-        this.userId = null;
-        this.token = null;
-    }
-    
-    // 連接聊天服務器
-    async connect(userId, password) {
-        return new Promise((resolve, reject) => {
-            this.websocket = new WebSocket(this.serverUrl);
-            
-            this.websocket.onopen = () => {
-                console.log('WebSocket連接已建立');
-                this.login(userId, password).then(resolve).catch(reject);
-            };
-            
-            this.websocket.onmessage = (event) => {
-                this.handleMessage(JSON.parse(event.data));
-            };
-            
-            this.websocket.onerror = (error) => {
-                console.error('WebSocket錯誤:', error);
-                reject(error);
-            };
-        });
-    }
-    
-    // 用戶登入
-    async login(userId, password) {
-        const message = {
-            header: {
-                version: "1.0",
-                mainNo: 1,
-                subNo: 1,
-                sessionId: 0,
-                requestId: Date.now()
-            },
-            buffer: {
-                userId: userId,
-                password: password
-            }
-        };
-        
-        this.websocket.send(JSON.stringify(message));
-    }
-    
-    // 發送聊天訊息
-    sendChatMessage(content) {
-        if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-            throw new Error('WebSocket未連接');
-        }
-        
-        const message = {
-            header: {
-                version: "1.0",
-                mainNo: 2,
-                subNo: 1,
-                sessionId: this.sessionId,
-                requestId: Date.now(),
-                userId: this.userId,
-                token: this.token
-            },
-            buffer: {
-                content: content
-            }
-        };
-        
-        this.websocket.send(JSON.stringify(message));
-    }
-    
-    // 處理接收到的訊息
-    handleMessage(message) {
-        const { header, buffer } = message;
-        
-        switch (header.mainNo) {
-            case 1: // 登入回應
-                if (buffer.code === 1) {
-                    this.sessionId = header.sessionId;
-                    this.token = buffer.token;
-                    this.onLoginSuccess(buffer);
-                } else {
-                    this.onLoginFailed(buffer.message);
-                }
-                break;
-                
-            case 2: // 聊天訊息
-                this.onChatMessage(buffer);
-                break;
-                
-            case 3: // 用戶列表更新
-                this.onUserListUpdate(buffer.users);
-                break;
-                
-            case 4: // 系統通知
-                this.onSystemNotification(buffer.message);
-                break;
-        }
-    }
-    
-    // 事件回調（需要實現）
-    onLoginSuccess(data) { /* 登入成功處理 */ }
-    onLoginFailed(message) { /* 登入失敗處理 */ }
-    onChatMessage(data) { /* 聊天訊息處理 */ }
-    onUserListUpdate(users) { /* 用戶列表更新處理 */ }
-    onSystemNotification(message) { /* 系統通知處理 */ }
-}
-
-// 使用示例
-const chatClient = new TinySocketChatClient('ws://localhost:30002');
-
-chatClient.onLoginSuccess = (data) => {
-    console.log('登入成功:', data);
-    document.getElementById('loginContainer').style.display = 'none';
-    document.getElementById('chatContainer').style.display = 'block';
-};
-
-chatClient.onChatMessage = (data) => {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'chat-message';
-    messageElement.innerHTML = `
-        <span class="username">${data.userId}</span>
-        <span class="content">${data.content}</span>
-        <span class="time">${new Date(data.timestamp).toLocaleTimeString()}</span>
-    `;
-    document.getElementById('messagesContainer').appendChild(messageElement);
-};
-
-// 連接並登入
-chatClient.connect('U001', 'password123');
-```
-
-#### JSON高性能處理
-```java
-import com.vscodelife.socketio.util.JsonUtil;
-
-// 序列化（支援null值）
-String json = JsonUtil.toJson(complexObject);
-
-// 反序列化
-MyClass obj = JsonUtil.fromJson(json, MyClass.class);
-
-// JSON驗證
-boolean valid = JsonUtil.isValidJson(jsonString);
-```
-
-#### 分散式ID生成
-```java
-import com.vscodelife.socketio.util.SnowflakeUtil;
-
-// 生成全局唯一ID（machineId需在集群中唯一）
-SnowflakeUtil.IdInfo idInfo = SnowflakeUtil.generateId(1);
-long uniqueId = idInfo.getId();
-```
-
-#### 性能分析
-```java
-import com.vscodelife.socketio.util.profiler.ProfilerUtil;
-
-// 開始性能分析
-ProfilerUtil.startProfiling("message-processing");
-
-// 執行業務邏輯
-processComplexOperation();
-
-// 結束並獲取結果
-ProfilerCounter counter = ProfilerUtil.stopProfiling("message-processing");
-System.out.println("平均處理時間: " + counter.getAverageTime() + "ms");
-```
-
-## 🔧 開發指南
-
-### 聊天應用快速部署指南
-
-#### 啟動聊天服務器
-```bash
-# 方法1: 直接運行主類
-./mvnw exec:java -Dexec.mainClass="com.vscodelife.demo.DemoChatServer" -pl demo
-
-# 方法2: 使用 Spring Boot 運行
-./mvnw spring-boot:run -pl demo -Dspring-boot.run.main-class=com.vscodelife.demo.DemoChatServer
-```
-
-#### 訪問Web聊天室
-```bash
-# 在瀏覽器中打開
-http://localhost:30002/chatjs/index.html
-
-# 或使用內建HTTP服務器（如果已配置）
-# 默認連接: ws://localhost:30002
-```
-
-#### 聊天室功能特色
-- ✅ **實時聊天**: 基於WebSocket的即時通訊
-- ✅ **用戶管理**: 自動用戶上線/下線通知
-- ✅ **訊息記錄**: 維護最近50條聊天記錄
-- ✅ **在線列表**: 實時顯示在線用戶
-- ✅ **系統通知**: 用戶狀態變化自動通知
-- ✅ **美觀界面**: 現代化的Web聊天界面
-- ✅ **移動適配**: 響應式設計支援手機瀏覽器
-
-### Maven依賴管理
-
-專案使用父POM統一管理依賴版本：
-
-```xml
-<!-- 使用socketio核心庫 -->
-<dependency>
-    <groupId>com.vscodelife</groupId>
-    <artifactId>socketio</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
-
-<!-- 使用serversocket服務器模組 -->
-<dependency>
-    <groupId>com.vscodelife</groupId>
-    <artifactId>serversocket</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
-```
-
-### 模組開發
-
-#### 開發新的Socket類型
-
-繼承 `SocketBase` 創建自定義Socket服務器（基於實際泛型設計）：
-
-```java
-// 自定義Header類型
-public class CustomHeader extends HeaderBase {
-    private String clientVersion;
-    private int deviceType;
-    
-    // getter/setter 方法...
-}
-
-// 自定義Connection類型  
-public class CustomConnection implements IConnection<ByteArrayBuffer> {
-    private String userId;
-    private long lastActiveTime;
-    
-    // 實現IConnection接口方法...
-}
-
-// 自定義Message類型
-public class CustomMessage extends MessageBase<CustomHeader, ByteArrayBuffer> {
-    public CustomMessage(CustomHeader header, ByteArrayBuffer buffer) {
-        super(header, buffer);
-    }
-    
-    @Override
-    public boolean release() {
-        // 實現資源釋放邏輯
-        return true;
-    }
-}
-
-// 自定義Socket服務器
-public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, CustomMessage, ByteArrayBuffer> {
-    
-    public CustomSocket(int port, int limitConnect) {
-        super(LoggerFactory.getLogger(CustomSocket.class), port, limitConnect, CustomSocketInitializer.class);
-    }
-    
-    @Override
-    public String getVersion() {
-        return "2.0.0";
-    }
-    
-    @Override
-    protected Class<CustomConnection> getConnectionClass() {
-        return CustomConnection.class;
-    }
-    
-    @Override
-    protected CacheBase<CustomMessage, ByteArrayBuffer> createCacheInstance() {
-        return new CustomCache<>();
-    }
-    
-    @Override
-    protected ChannelInitializer<SocketChannel> createInitializer(
-            Class<? extends ChannelInitializer<SocketChannel>> initializerClass) throws Exception {
-        // 配置自定義的編解碼器
-        return new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
-                ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast("decoder", new CustomDecoder());
-                pipeline.addLast("encoder", new CustomEncoder());
-                pipeline.addLast("handler", new CustomHandler(CustomSocket.this));
-            }
-        };
-    }
-    
-    @Override
-    public void onConnect(long sessionId) {
-        logger.info("自定義連接建立: sessionId={}", sessionId);
-    }
-    
-    @Override
-    public void onDisconnect(long sessionId) {
-        logger.info("自定義連接斷開: sessionId={}", sessionId);
-    }
-    
-    @Override
-    public void run() {
-        // 實現主運行邏輯
-    }
-    
-    @Override
-    public void bind() {
-        // 實現綁定邏輯
-    }
-    
-    @Override
-    public void close() {
-        // 實現關閉邏輯
-    }
-}
-```
-
-### VS Code開發環境
-
-專案已配置完整的VS Code開發支援：
-
-- ✅ **自動格式化**: Google Java Style
-- ✅ **智能提示**: 完整的代碼補全
-- ✅ **調試支援**: 一鍵啟動調試
-- ✅ **Maven整合**: 內建構建和測試
-
-### 🧪 測試
-
-```bash
-# 運行所有測試
-./mvnw test
-
-# 運行特定模組測試  
-./mvnw test -pl socketio      # 測試socketio模組
-./mvnw test -pl serversocket  # 測試serversocket模組
-
-# 生成測試報告（包含覆蓋率）
-./mvnw clean test jacoco:report
-
-# 運行特定測試類
-./mvnw test -Dtest=ByteArrayBufferTest -pl socketio
-./mvnw test -Dtest=SocketBaseTest -pl serversocket
-
-# 並行測試執行（加速測試）
-./mvnw test -T 4 # 使用4個執行緒並行測試
-```
-
-## 📈 性能特性
-
-| 特性 | 說明 | 優勢 |
-|------|------|------|
-| **零拷貝緩衝區** | 智能內存管理 | 減少GC壓力，提升吞吐量 |
-| **字節序優化** | 網絡/本地字節序切換 | 跨平台高效數據交換 |
-| **結構化序列化** | 註解驅動自動化 | 類型安全，性能優於反射 |
-| **連接池化** | 可重用連接管理 | 降低連接建立開銷 |
-| **異步處理** | 基於Netty NIO | 支援高並發場景 |
-
-## 🔮 發展計劃
-
-### 🎯 短期目標（v0.1.0）
-- [x] **socketio**: 核心通信庫 ✅ 完成
-  - [x] ByteArrayBuffer高性能緩衝區
-  - [x] 結構化訊息系統(@MessageTag)
-  - [x] 豐富的工具類庫(JsonUtil、SnowflakeUtil等)
-- [x] **serversocket**: 服務器端Socket實現 ✅ 完成
-  - [x] ByteSocket/JsonSocket高性能服務器
-  - [x] SocketBase泛型基類設計
-  - [x] 組件化架構(RateLimiter、ProtocolCatcher)
-- [x] **clientsocket**: 客戶端Socket實現 ✅ 完成
-  - [x] ByteSocket/JsonSocket智能客戶端
-  - [x] 自動重連機制
-  - [x] 心跳保持機制
-- [x] **demo**: 完整示範應用 ✅ 完成
-  - [x] 服務器和客戶端完整示例
-  - [x] 協議處理演示
-  - [x] 性能測試用例
-  - [x] 聊天服務器實現（DemoChatServer）🆕
-  - [x] Web聊天室前端（chatjs）🆕
-  - [x] 聊天管理系統（ChatManager、UserManager）🆕
-- [ ] **測試完善**: 提升測試覆蓋率至90%以上
-- [ ] **文檔完善**: API文檔和使用指南
-- [ ] **性能優化**: 基準測試和性能調優
-
-### 🚀 中期目標（v0.2.0 - v0.3.0）
-- [x] **聊天系統**: 完整的聊天應用實現 ✅ 完成 🆕
-  - [x] JSON協議聊天服務器
-  - [x] Web聊天室界面
-  - [x] 用戶管理和聊天記錄
-  - [x] 實時通訊和系統通知
-- [ ] **websocket**: WebSocket協議支援
-  - [ ] WebSocket服務器實現
-  - [ ] HTTP升級協議處理
-  - [ ] 瀏覽器客戶端支援
-- [ ] **Spring Boot Starter**: 自動配置和Starter
-  - [ ] 零配置啟動
-  - [ ] 健康檢查端點
-  - [ ] 配置屬性綁定
-- [ ] **安全增強**: SSL/TLS和認證機制
-- [ ] **監控儀表板**: Prometheus指標和Grafana面板
-
-### 🌟 長期願景（v1.0+）
-- [ ] **微服務整合**: Service Mesh支援
-- [ ] **雲原生**: Kubernetes Operator
-- [ ] **多語言支援**: Python、Go、C#客戶端SDK
-- [ ] **AI增強**: 智能路由和流量預測
-- [ ] **性能極致優化**: 零拷貝、用戶態網絡棧
-
-## 🏆 核心優勢
-
-### 🎨 **開發體驗**
-- 豐富的API文檔和示例
-- 完整的IDE支援
-- 詳細的錯誤信息和調試
-- 實時聊天應用示例
-
-### ⚡ **高性能**
-- 基於Netty的異步I/O
-- 零拷貝內存管理
-- 智能的連接復用
-- JSON協議優化
-
-### 🔧 **易擴展**
-- 模組化架構設計
-- 清晰的API邊界
-- 插件化擴展機制
-- 聊天組件系統
-
-### 🛡️ **產品級**
-- 完善的錯誤處理
-- 內建性能監控
-- 生產環境驗證
-
-## 📚 學習資源
-
-- 📖 **[SocketIO API文檔](./socketio/README.md)**: 核心庫詳細API使用指南
-- 🌐 **[ServerSocket使用文檔](./serversocket/README.md)**: 服務器模組使用指南
-- � **[ClientSocket使用文檔](./clientsocket/README.md)**: 客戶端模組使用指南
-- 🎯 **[Demo示範應用](./demo/README.md)**: 完整的使用示例和最佳實踐
-- 💻 **代碼示例**: 實用的代碼示例庫，展示各種使用場景
-- 🔧 **最佳實踐**: 生產環境部署和性能調優建議
-- 📊 **性能調優**: 針對高併發場景的優化技巧
-
-## 📈 性能基準
-
-基於實際測試的性能指標：
-
-| 指標 | 數值 | 說明 |
-|------|------|------|
-| **併發連接數** | 10,000+ | 單機支援的最大併發連接 |
-| **消息吞吐量** | 100,000 msg/s | 小消息(1KB)的處理速度 |
-| **內存使用** | < 1GB | 1萬連接下的內存佔用 |
-| **CPU使用率** | < 30% | 高負載下的CPU使用率 |
-| **延遲** | < 1ms | 99%消息處理延遲 |
-| **GC壓力** | 極低 | 零拷貝設計減少GC |
-
-## 🤝 社群與支援
-
-- 💬 **GitHub Issues**: [問題報告和功能請求](https://github.com/vscodelife/tinysocket/issues)
-- 📧 **郵件支援**: vscodelife@example.com
-- 📱 **技術交流**: QQ群/微信群（開發中）
-- 📚 **Wiki文檔**: [詳細技術文檔](https://github.com/vscodelife/tinysocket/wiki)
-- 🎥 **視頻教程**: B站/YouTube技術分享（計劃中）
-
-## 🏆 項目特色
-
-### 🔥 **技術亮點**
-- ✅ **完整的泛型設計**: 類型安全的Socket框架設計
-- ✅ **零拷貝緩衝區**: 高性能的ByteArrayBuffer實現
-- ✅ **組件化架構**: 可插拔的限流器、協議捕獲器等組件
-- ✅ **註解驅動**: @MessageTag自動序列化系統
-- ✅ **性能監控**: 內建ProfilerUtil性能分析工具
-
-### 🛡️ **生產特性**
-- ✅ **連接管理**: 智能的連接生命周期管理
-- ✅ **錯誤處理**: 完善的異常處理和恢復機制
-- ✅ **限流保護**: RateLimiter防止服務過載
-- ✅ **優雅關閉**: 支援服務的優雅停機
-- ✅ **可觀測性**: 詳細的日誌和監控指標
-
-### 🎨 **開發體驗**
-- ✅ **VS Code支援**: 完整的開發環境配置
-- ✅ **Maven Wrapper**: 統一的構建環境
-- ✅ **清晰架構**: 模組化設計易於理解和擴展
-- ✅ **詳細文檔**: 豐富的註釋和使用說明
-- ✅ **示例代碼**: 實用的代碼示例和最佳實踐  
-- ✅ **聊天應用**: 完整的實時聊天系統示例
-
-## 📄 許可證
-
-本專案採用 **MIT License** - 查看 [LICENSE](LICENSE) 文件了解詳情。
 
 ---
 
-## 🙏 致謝
+## 📚 模組詳細說明
 
-感謝以下開源項目的貢獻：
-- [Netty](https://netty.io/) - 高性能網絡應用框架
-- [Spring Boot](https://spring.io/projects/spring-boot) - 現代化Java應用框架  
-- [FastJSON 2](https://github.com/alibaba/fastjson2) - 高性能JSON庫
-- [Joda-Time](https://www.joda.org/joda-time/) - 強大的日期時間API
-- [Lombok](https://projectlombok.org/) - 簡化Java開發
+### 🔧 [SocketIO](socketio/) - 核心通信庫
+**作為整個框架的基石，提供統一的通信協議和基礎設施**
+
+| 功能類別 | 核心組件 | 功能描述 |
+|---------|---------|---------|
+| **緩衝區管理** | `ByteArrayBuffer` | 零拷貝二進制緩衝區，支援壓縮和雙字節序 |
+| | `JsonMapBuffer` | 高性能JSON緩衝區，基於FastJSON2實現 |
+| **訊息系統** | `ByteMessage` / `JsonMessage` | 結構化訊息處理，支援泛型設計 |
+| | `ByteCache` / `JsonCache` | 智能訊息快取管理 |
+| **註解驅動** | `@ProtocolTag` | 協議方法自動註冊 |
+| | `@MessageTag` | 序列化欄位標記 |
+| **工具類庫** | `JsonUtil` / `JwtUtil` / `HttpUtil` | 豐富的工具類支援 |
+| | `SnowflakeUtil` / `ProfilerUtil` | 分散式ID和性能分析 |
+
+**🎯 適用場景**: 作為其他模組的基礎依賴，通常不直接使用
+
+### 🚀 [ServerSocket](serversocket/) - 服務器端實現
+**高性能、高併發的Socket服務器框架，支援泛型設計和組件化架構**
+
+| 服務器類型 | 適用場景 | 核心特性 |
+|-----------|---------|---------|
+| **ByteSocket** | 遊戲服務器、IoT設備、高頻交易 | 二進制協議、極致性能、低延遲 |
+| **JsonSocket** | Web API、微服務、聊天系統 | JSON協議、WebSocket支援、易於調試 |
+| **SocketBase** | 自定義服務器 | 泛型基類、完整約束、靈活擴展 |
+
+**核心組件**:
+- **RateLimiter**: 多級限流保護，支援隨機過濾和時間窗口
+- **ProtocolRegister**: 註解驅動的協議自動註冊
+- **ProtocolCatcher**: 協議異常捕獲和優雅降級
+- **Connection管理**: 智能連接生命周期管理
+
+**🎯 適用場景**: 需要構建高性能Socket服務器的企業級應用
+
+### 🔗 [ClientSocket](clientsocket/) - 客戶端實現
+**智能化的Socket客戶端，內建重連、心跳、快取等企業級特性**
+
+| 客戶端類型 | 連接特性 | 可靠性保障 |
+|-----------|---------|-----------|
+| **ByteClient** | 二進制協議、高性能 | 自動重連、訊息快取、心跳保持 |
+| **JsonClient** | JSON協議、易於整合 | 連接監控、異常恢復、狀態同步 |
+
+**智能特性**:
+- **自動重連**: 指數退避算法，智能重連策略
+- **心跳保持**: 定期心跳檢測，確保連接活性
+- **訊息快取**: 離線訊息暫存，連接恢復後自動重發
+- **狀態管理**: 完整的連接狀態機管理
+
+**🎯 適用場景**: 需要可靠Socket連接的客戶端應用
+
+### 📚 [Demo](demo/) - 完整示例集合
+**提供完整的使用示例和最佳實踐，是學習TinySocket的最佳起點**
+
+| 示例類型 | 技術棧 | 學習重點 |
+|---------|-------|---------|
+| **二進制通信系統** | ByteSocket + Console | 高性能協議設計、認證機制 |
+| **Web聊天系統** | JsonSocket + WebSocket + HTML | 實時通信、用戶管理、前端整合 |
+| **Spring Boot整合** | 完整企業級配置 | 生產環境部署、配置管理 |
+
+**示例功能**:
+- 🔐 **用戶認證**: JWT Token管理、登入登出
+- 💬 **實時通信**: 即時訊息、廣播、私聊
+- 📊 **監控統計**: 連接數監控、性能統計
+- 🌐 **Web界面**: 現代化聊天室前端
+
+**🎯 適用場景**: 框架學習、原型開發、生產環境參考
+
+---
+
+## ⚡ 快速開始
+
+### 環境要求
+
+| 組件 | 版本要求 | 說明 |
+|------|---------|------|
+| **Java** | 21+ | 使用最新的Java特性和性能優化 |
+| **Maven** | 3.6+ | 構建和依賴管理 |
+| **操作系統** | Windows/Linux/macOS | 跨平台支援 |
+
+### 方式一：運行示例程序（推薦）
+
+Clone專案並運行完整示例：
+
+```bash
+# 克隆專案
+git clone https://github.com/vscodelife/tinysocket.git
+cd tinysocket
+
+# 編譯整個專案
+mvn clean package
+
+# 方式1: 運行二進制通信演示
+cd demo/target
+# 解壓並運行
+unzip demo-0.0.1-SNAPSHOT.zip
+cd demo-0.0.1-SNAPSHOT
+
+# 啟動服務器（PowerShell/CMD）
+.\run-byte-server.bat
+
+# 新開命令行，啟動客戶端
+.\run-byte-client.bat user1 password123
+
+# 方式2: 運行Web聊天系統
+.\run-web-chat.bat
+# 然後在瀏覽器訪問: http://localhost:30002
+```
+
+### 方式二：整合到現有專案
+
+#### 1. 添加Maven依賴
+
+```xml
+<dependencies>
+    <!-- 服務器端開發 -->
+    <dependency>
+        <groupId>com.vscodelife</groupId>
+        <artifactId>serversocket</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    
+    <!-- 客戶端開發 -->
+    <dependency>
+        <groupId>com.vscodelife</groupId>
+        <artifactId>clientsocket</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+</dependencies>
+```
+
+#### 2. 創建簡單的服務器
+
+```java
+// 創建JSON服務器
+public class MyApiServer extends JsonSocket<ApiHeader, ApiConnection> {
+    
+    public MyApiServer() {
+        super(logger, 8080, 1000, MyInitializer.class);
+        // 註冊協議處理器
+        protocolRegister.scanAndRegisterProtocols(MyProtocol.class);
+    }
+    
+    @Override
+    protected Class<ApiConnection> getConnectionClass() {
+        return ApiConnection.class;
+    }
+    
+    @Override
+    public String getVersion() { return "1.0.0"; }
+}
+
+// 協議處理器
+public class MyProtocol {
+    public static MyApiServer server;
+    
+    @ProtocolTag(mainNo = 1, subNo = 1, describe = "用戶登入")
+    public static void handleLogin(JsonMessage<ApiHeader> message) {
+        JsonMapBuffer buffer = message.getBuffer();
+        String username = buffer.getString("username");
+        String password = buffer.getString("password");
+        
+        // 處理登入邏輯...
+        JsonMapBuffer response = new JsonMapBuffer();
+        response.put("success", true);
+        response.put("token", "jwt-token-here");
+        
+        server.sendToClient(message.getHeader().getSessionId(), 1, 1, response);
+    }
+}
+
+// 啟動服務器
+public static void main(String[] args) {
+    MyApiServer server = new MyApiServer();
+    server.run();
+}
+```
+
+#### 3. 創建客戶端連接
+
+```java
+// 創建JSON客戶端
+JsonClient<ApiHeader> client = new JsonClient<>(
+    "localhost", 8080, 
+    MyClientInitializer.class, 
+    ApiHeader.class
+);
+
+// 註冊協議處理器
+client.getProtocolRegister().scanAndRegisterProtocols(ClientProtocol.class);
+
+// 連接服務器
+client.connect();
+
+// 發送登入請求
+JsonMapBuffer loginData = new JsonMapBuffer();
+loginData.put("username", "alice");
+loginData.put("password", "password123");
+client.sendMessage(1, 1, loginData);
+```
+
+---
+
+## 🛠️ 技術棧
+
+TinySocket 框架基於現代化的Java技術棧構建：
+
+| 類別 | 組件 | 版本 | 用途 |
+|------|------|------|------|
+| **核心框架** | Java | 21+ | 基礎語言，支援虛擬線程和模式匹配 |
+| | Netty | 4.1.115.Final | 高性能網絡通信引擎 |
+| | Spring Boot | 3.5.4 | 應用框架和依賴注入 |
+| **序列化** | FastJSON | 2.0.52 | 高性能JSON序列化 |
+| **工具庫** | JJWT | 0.12.6 | JWT令牌處理 |
+| | Joda-Time | 2.12.7 | 日期時間處理 |
+| | Lombok | 1.18.30 | 代碼簡化 |
+| **構建工具** | Maven | 3.6+ | 依賴管理和構建 |
+
+### 性能特性
+
+- **零拷貝**: ByteArrayBuffer實現零拷貝操作，減少內存分配
+- **異步I/O**: 基於Netty NIO，支援數萬並發連接
+- **智能快取**: 訊息對象池化，降低GC壓力
+- **壓縮支援**: 內建GZIP壓縮，節省網絡帶寬
+
+---
+
+---
+
+## 🎯 使用場景
+
+TinySocket 框架適用於多種應用場景：
+
+### 🎮 遊戲服務器
+- **實時遊戲**: MMORPG、MOBA、FPS等需要低延遲的遊戲
+- **回合制遊戲**: 棋牌、策略類遊戲的服務器實現
+- **遊戲大廳**: 房間匹配、玩家管理、遊戲監控
+
+### 💬 即時通信
+- **企業IM**: 企業內部即時通訊系統
+- **在線客服**: 客戶服務和技術支援系統
+- **社交聊天**: 群聊、私聊、語音文字混合通信
+
+### 🌐 Web服務
+- **WebSocket API**: RESTful API的補充，提供雙向通信
+- **推送服務**: 消息推送、通知系統
+- **實時數據**: 股票行情、監控數據的實時推送
+
+### 🏭 物聯網 (IoT)
+- **設備通信**: 智能家居、工業設備的數據採集
+- **邊緣計算**: 邊緣節點與雲端的高效通信
+- **監控系統**: 實時監控數據傳輸和處理
+
+## 📖 學習路徑
+
+### 🎯 初學者路徑
+1. **[Demo示例](demo/README.md)** - 運行完整示例，理解框架整體功能
+2. **[SocketIO文檔](socketio/README.md)** - 學習核心概念和基礎API
+3. **簡單實踐** - 基於示例修改，實現自己的小功能
+
+### 🔧 開發者路徑
+1. **[ServerSocket文檔](serversocket/README.md)** - 深入理解服務器端架構
+2. **[ClientSocket文檔](clientsocket/README.md)** - 掌握客戶端開發技巧
+3. **生產實踐** - 構建完整的商業級應用
+
+### 🚀 架構師路徑
+1. **源碼研究** - 深入理解框架設計模式和最佳實踐
+2. **性能調優** - 針對特定場景進行性能優化
+3. **擴展開發** - 基於框架開發自定義組件和擴展
 
 ---
 
@@ -953,10 +341,10 @@ public class CustomSocket extends SocketBase<CustomHeader, CustomConnection, Cus
 *讓網絡通信變得簡單而高效*
 
 > **版本**: v0.0.1-SNAPSHOT  
-> **最後更新**: 2025年9月13日  
+> **最後更新**: 2025年9月14日  
 > **Java版本**: OpenJDK 21+  
 > **Spring Boot版本**: 3.5.4
-> **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅ | 聊天系統 ✅
+> **模組狀態**: socketio ✅ | serversocket ✅ | clientsocket ✅ | demo ✅
 
 [![GitHub Stars](https://img.shields.io/github/stars/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)
 [![GitHub Forks](https://img.shields.io/github/forks/vscodelife/tinysocket?style=social)](https://github.com/vscodelife/tinysocket)

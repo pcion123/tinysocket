@@ -39,20 +39,22 @@ serversocket/
 │   │   ├── 連接管理: connectionMap
 │   │   ├── 訊息處理: messageQueue
 │   │   ├── 協議註冊: protocolRegister
-│   │   └── 組件系統: rateLimiter, cacheManager
-│   ├── ByteSocket.java                # 二進制 Socket 服務器
-│   │   ├── 繼承: SocketBase<HeaderBase, IConnection<ByteArrayBuffer>, ByteMessage<HeaderBase, ByteArrayBuffer>, ByteArrayBuffer>
+│   │   └── 組件系統: rateLimiter, protocolCatcher
+│   ├── ByteSocket.java                # 二進制 Socket 服務器（抽象類）
+│   │   ├── 繼承: SocketBase<H, C, ByteMessage<H, ByteArrayBuffer>, ByteArrayBuffer>
+│   │   ├── 泛型約束: <H extends HeaderBase, C extends IConnection<ByteArrayBuffer>>
 │   │   ├── 快取管理: ByteCache
-│   │   └── 初始化器: ByteInitializer
-│   ├── JsonSocket.java                # JSON Socket 服務器
-│   │   ├── 繼承: SocketBase<HeaderBase, IConnection<JsonObject>, JsonMessage<HeaderBase, JsonObject>, JsonObject>
+│   │   └── 連接管理: ByteArrayBuffer 數據處理
+│   ├── JsonSocket.java                # JSON Socket 服務器（抽象類）
+│   │   ├── 繼承: SocketBase<H, C, JsonMessage<H, JsonMapBuffer>, JsonMapBuffer>
+│   │   ├── 泛型約束: <H extends HeaderBase, C extends IConnection<JsonMapBuffer>>
 │   │   ├── 快取管理: JsonCache
-│   │   └── 初始化器: JsonInitializer
+│   │   └── 連接管理: JsonMapBuffer 數據處理
 │   ├── component/                     # 組件系統
 │   │   ├── RateLimiter.java               # 限流器組件
-│   │   │   ├── 令牌桶算法限流
-│   │   │   ├── 可配置限流策略
-│   │   │   └── 過載保護機制
+│   │   │   ├── 隨機過濾限流算法
+│   │   │   ├── 時間窗口限流控制
+│   │   │   └── 動態開關控制機制
 │   │   ├── ProtocolCatcher.java           # 協議異常捕獲器
 │   │   │   ├── 異常處理包裝
 │   │   │   ├── 錯誤日誌記錄
@@ -62,37 +64,16 @@ serversocket/
 │   │       ├── @ProtocolTag 註解處理
 │   │       └── 協議方法映射
 │   └── connection/                    # 連接管理實現
-│       ├── ByteConnection.java            # 二進制連接實現
+│       ├── ByteConnection.java            # 二進制連接實現（抽象類）
 │       │   ├── 實現: IConnection<ByteArrayBuffer>
 │       │   ├── 二進制數據處理
-│       │   ├── 壓縮傳輸支援
-│       │   └── 會話狀態管理
-│       └── JsonConnection.java            # JSON 連接實現
-│           ├── 實現: IConnection<String>
-│           ├── JSON 自動序列化
-│           ├── 結構化數據處理
-│           └── 調試友好輸出
-│   │   ├── RateLimiter.java           # 限流器組件
-│   │   │   ├── 令牌桶算法
-│   │   │   ├── 滑動窗口限流
-│   │   │   └── IP/用戶級別限流
-│   │   ├── ProtocolCatcher.java       # 協議異常捕獲器
-│   │   │   ├── 異常處理包裝
-│   │   │   ├── 錯誤日誌記錄
-│   │   │   └── 優雅降級處理
-│   │   └── ProtocolRegister.java      # 協議註冊器
-│   │       ├── 註解掃描: @ProtocolTag
-│   │       ├── 方法註冊: protocolMap
-│   │       └── 類型檢查: 泛型驗證
-│   └── connection/                    # 連接管理實現
-│       ├── ByteConnection.java        # 二進制連接實現
-│       │   ├── 實現: IConnection<ByteArrayBuffer>
-│       │   ├── 狀態管理: 連接狀態追蹤
-│       │   └── 生命周期: 連接/斷開處理
-│       └── JsonConnection.java        # JSON 連接實現
-│           ├── 實現: IConnection<JsonObject>
-│           ├── JSON 處理: 自動序列化
-│           └── 類型轉換: JSON <-> Object
+│       │   ├── 連接狀態管理
+│       │   └── 會話生命周期處理
+│       └── JsonConnection.java            # JSON 連接實現（抽象類）
+│           ├── 實現: IConnection<JsonMapBuffer>
+│           ├── JSON 數據處理
+│           ├── 連接狀態管理
+│           └── 會話生命周期處理
 ```
 
 ### 架構層次說明
@@ -111,7 +92,7 @@ ServerSocket 採用分層架構設計，從上到下分為四個層次：
    - SocketBase: 泛型基類，提供完整的類型約束
 
 3. **Component Layer（組件層）**
-   - RateLimiter: 限流器，支援令牌桶和滑動窗口算法
+   - RateLimiter: 限流器，支援隨機過濾和時間窗口限流
    - ProtocolCatcher: 協議異常捕獲和處理
    - ProtocolRegister: 協議註冊器，支援 @ProtocolTag 註解
    - CacheManager: 快取管理器
@@ -356,24 +337,42 @@ public class RateLimiterExample {
     public void configureRateLimit() {
         RateLimiter rateLimiter = new RateLimiter();
         
-        // 配置全局限流：每秒 1000 個請求
-        rateLimiter.setGlobalLimit(1000);
+        // 啟用限流：10分鐘限流窗口，20% 過濾率（80% 通過率）
+        rateLimiter.enable(10 * 60 * 1000L, 20);
         
-        // 配置 IP 級別限流：每個 IP 每秒 10 個請求
-        rateLimiter.setPerIpLimit(10);
-        
-        // 配置用戶級別限流：每個用戶每秒 5 個請求
-        rateLimiter.setPerUserLimit(5);
-        
-        // 在協議處理前檢查限流
-        if (!rateLimiter.allowRequest(clientIp, userId)) {
+        // 檢查請求是否通過限流
+        if (!rateLimiter.pass()) {
             // 拒絕請求
-            sendErrorResponse("請求頻率過高，請稍後再試");
+            sendErrorResponse("系統繁忙，請稍後再試");
             return;
         }
         
         // 處理正常請求
         processRequest();
+        
+        // 動態調整限流策略
+        if (systemOverloaded()) {
+            // 提高過濾率到 50%（50% 通過率）
+            rateLimiter.enable(5 * 60 * 1000L, 50);
+        }
+        
+        // 系統恢復時關閉限流
+        if (systemRecovered()) {
+            rateLimiter.disable();
+        }
+    }
+    
+    public void customRateLimitConfig() {
+        // 創建自定義限流器
+        RateLimiter customLimiter = new RateLimiter(true, 30 * 60 * 1000L, 30);
+        
+        // 檢查限流狀態
+        if (customLimiter.isEnabled()) {
+            long remainingTime = customLimiter.getLimitTime() - System.currentTimeMillis();
+            int filterRate = customLimiter.getFilterRate();
+            
+            logger.info("限流中：剩餘時間 {}ms，過濾率 {}%", remainingTime, filterRate);
+        }
     }
 }
 ```
