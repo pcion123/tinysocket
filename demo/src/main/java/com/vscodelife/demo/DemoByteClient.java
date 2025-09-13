@@ -15,7 +15,9 @@ public class DemoByteClient {
     private static final CommandManager commandManager = CommandManager.getInstance();
 
     public static void main(String[] args) {
-        TestByteClient client = new TestByteClient("U002", "pass456");
+        String userId = args == null ? "U002" : args[0];
+        String password = args == null ? "pass456" : args[1];
+        TestByteClient client = new TestByteClient(userId, password);
         client.connect("127.0.0.1", 30001);
         // 創建命令管理器
         commandManager.registerCommand("/users", (params) -> {
