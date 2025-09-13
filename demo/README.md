@@ -253,27 +253,6 @@ demo-0.0.1-SNAPSHOT/
 - **系統通知**: 用戶加入/離開通知
 - **連接狀態**: 實時顯示連接狀態
 
-## 🤝 最佳實踐
-
-### 代碼組織
-
-```java
-// 推薦的專案結構
-src/main/java/
-├── server/          # 服務器端代碼
-│   ├── handler/     # 協議處理器
-│   ├── connection/  # 連接管理
-│   └── protocol/    # 協議定義
-├── client/          # 客戶端代碼
-│   ├── handler/     # 客戶端處理器
-│   └── connection/  # 客戶端連接
-├── common/          # 共用代碼
-│   ├── protocol/    # 協議常數
-│   ├── entity/      # 實體類
-│   └── util/        # 工具類
-└── config/          # 配置類
-```
-
 ## 📚 相關資源
 
 - **[SocketIO 核心庫文檔](../socketio/README.md)**: 了解核心庫的詳細功能
